@@ -1,1 +1,1 @@
-# hotel-dooars-mountain (DEV PHASE)
+# hotel-dooars-mountain (DEV-PHASE)
