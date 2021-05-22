@@ -50,6 +50,15 @@ public class ItemServiceImpl implements ItemService {
 	}
 
 	@Override
+	public List<Item> addItems(List<Item> items) throws BaseException {
+		LOGGER.trace("Entering into addItems method in ItemServiceImpl with {}", items.toString());
+		for ( Item i : items) {
+			itemRepo.addItem(i);
+		}
+		return items;
+	}
+
+	@Override
 	public Item getItemById(int itemId) throws BaseException {
 		LOGGER.trace("Entering into getItemById method in ItemServiceImpl with {}", itemId);
 		return itemRepo.getItemById(itemId);

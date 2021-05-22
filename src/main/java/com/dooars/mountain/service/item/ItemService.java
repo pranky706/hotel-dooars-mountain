@@ -18,6 +18,7 @@ import com.dooars.mountain.model.item.Offer;
 public interface ItemService {
 	
 	Item addItem(Item item) throws BaseException;
+	List<Item> addItems(List<Item> item) throws BaseException;
 	Item getItemById(int itemId) throws BaseException;
 	List<Item> getItemByGroupId(int groupId) throws BaseException;
 	void changeItemAvailability(int itemId, String status) throws BaseException;

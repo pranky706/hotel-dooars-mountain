@@ -44,7 +44,7 @@ public class ItemRepositoryImpl implements ItemRepository {
 	private final String ADD_ITEM = "INSERT INTO items(itemName, description, imageName, offer, offerFrom, offerUpto, price, groupId, isAvailable, isdelete)   \r\n" + 
 			"VALUES (:itemName, :description, :imageName, :offer, :offerFrom, :offerUpto, :price, :groupId, :isAvailable, :isdelete);";
 	
-	private final String LAST_ID = "SELECT LAST_INSERT_ID();";
+	private final String LAST_ID = "SELECT lastval();";
 	
 	private final String GET_ITEM = "select * from items where itemId = :itemId and isdelete = :isdelete";
 	

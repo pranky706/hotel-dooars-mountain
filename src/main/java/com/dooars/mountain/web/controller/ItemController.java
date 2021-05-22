@@ -57,6 +57,17 @@ public class ItemController {
 		LOGGER.trace("Entering into addItem method in ItemController with{}", item.toString());
 		return (ResponseEntity<T>) helper.validateAndExecute(validator, bindingResult, item, () -> service.addItem(item));		
 	}
+
+	@PostMapping("/addItems")
+	public <T> ResponseEntity<T> addItems(@RequestBody List<Item> items) {
+		LOGGER.trace("Entering into getItemByItemId method in ItemController with {}", items.toString());
+		try {
+			return new ResponseEntity<T>((T) service.addItems(items), HttpStatus.OK);
+
+		} catch (BaseException e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
 	
 	@SuppressWarnings("unchecked")
 	@PostMapping("/getItemsByGroupId")

@@ -3,6 +3,7 @@
  */
 package com.dooars.mountain.web.controller;
 
+import com.dooars.mountain.model.common.BaseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -10,11 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Validator;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.dooars.mountain.model.common.ApiResult;
 import com.dooars.mountain.model.customer.Customer;
@@ -55,4 +52,22 @@ public class CustomerController {
 		LOGGER.trace("Entering into addCustomer method in CustomerController with{}", customer.toString());
 		return (ResponseEntity<T>) helper.validateAndExecute(validator, bindingResult, customer, () -> service.addCustomer(customer));		
 	}
+
+	@PostMapping(CustomerConstants.GET_CUSTOMER_URL)
+	public <T> ResponseEntity<T> getCustomer(@RequestParam("mobileNumber") long mobileNumber) {
+		LOGGER.trace("Entering into addCustomer method in CustomerController with {}", mobileNumber);
+		try {
+			Customer customer = service.getCustomer(mobileNumber);
+			if ( null != customer) {
+				return new ResponseEntity<T>((T) customer, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<T>(HttpStatus.NOT_FOUND);
+			}
+
+		} catch (BaseException e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
+
+
 }

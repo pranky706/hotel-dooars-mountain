@@ -38,7 +38,7 @@ public class MenuGroupRepositoryImpl implements MenuGroupRepository {
 	private final String ADD_MENU_GROUP = "INSERT INTO menu_group(groupName, isdelete)   \r\n" + 
 			"VALUES (:groupName, :isdelete);";
 	
-	private final String LAST_ID = "SELECT LAST_INSERT_ID();";
+	private final String LAST_ID = "SELECT lastval();";
 	
 	private final String GET_MENU_GROUP = "select * from menu_group where groupId = :groupId and isdelete = :isdelete";
 	
