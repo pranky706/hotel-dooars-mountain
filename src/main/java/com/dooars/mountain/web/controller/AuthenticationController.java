@@ -66,6 +66,7 @@ public class AuthenticationController {
 					String token = getJWTToken(customer.getMobileNumber());
 					map.put("token", token);
 					map.put("success", true);
+					map.put("custName", customer.getCustName());
 					return  (ResponseEntity<T>) helper.constructSuccessResponse(map);
 				} else {
 					return helper.constructNotFoundResponse();
