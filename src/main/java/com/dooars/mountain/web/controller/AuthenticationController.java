@@ -63,7 +63,7 @@ public class AuthenticationController {
 				Customer customer = service.getCustomer(command.getMobileNumber());
 				if ( null != customer) {
 					Map<String, Object> map = new HashMap<String, Object>();
-					String token = getJWTToken(customer.getMobileNumber());
+					String token = getJWTToken(customer);
 					map.put("token", token);
 					map.put("success", true);
 					map.put("custName", customer.getCustName());
@@ -80,15 +80,20 @@ public class AuthenticationController {
 		}
 	}
 
-	private String getJWTToken(long mobileNumber) {
+	private String getJWTToken(Customer customer) {
 		String secretKey = "mySecretKey";
+		String role = "";
+		if ("Y".equals(customer.getIsAdmin()))
+			role = AllGolbalConstants.ROLE_ADMIN;
+		else
+			role = AllGolbalConstants.ROLE_USER;
 		List<GrantedAuthority> grantedAuthorities = AuthorityUtils
-				.commaSeparatedStringToAuthorityList("ROLE_USER");
+				.commaSeparatedStringToAuthorityList(role);
 		
 		String token = Jwts
 				.builder()
 				.setId("JWT")
-				.setSubject(String.valueOf(mobileNumber))
+				.setSubject(String.valueOf(customer.getMobileNumber()))
 				.claim("authorities",
 						grantedAuthorities.stream()
 								.map(GrantedAuthority::getAuthority)

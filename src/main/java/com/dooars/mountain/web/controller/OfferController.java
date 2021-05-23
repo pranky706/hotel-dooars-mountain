@@ -2,6 +2,7 @@ package com.dooars.mountain.web.controller;
 
 
 
+import com.dooars.mountain.constants.AllEndPoints;
 import com.dooars.mountain.model.centraloffer.CentralOffer;
 import com.dooars.mountain.model.common.BaseException;
 import com.dooars.mountain.service.centraloffer.CentralOfferService;
@@ -24,7 +25,6 @@ import java.util.List;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/api/offer-service")
 public class OfferController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OfferController.class);
@@ -42,7 +42,7 @@ public class OfferController {
     }
 
     @SuppressWarnings("unchecked")
-    @PostMapping("/addOffer")
+    @PostMapping(AllEndPoints.ADD_OFFER)
     public <T> ResponseEntity<T> addOffer(@RequestBody CentralOffer centralOffer, BindingResult bindingResult) {
         LOGGER.trace("Entering into addItem method in OfferController with{}", centralOffer.toString());
         return (ResponseEntity<T>) helper.validateAndExecute(addValidator, bindingResult, centralOffer, () -> service.addOffer(centralOffer));
@@ -66,13 +66,13 @@ public class OfferController {
     }
 
     @SuppressWarnings("unchecked")
-    @PostMapping("/updateOffer")
+    @PostMapping(AllEndPoints.UPDATE_OFFER)
     public <T> ResponseEntity<T> updateOffer(@RequestBody CentralOffer centralOffer, BindingResult bindingResult) {
         LOGGER.trace("Entering into updateOffer method in OfferController with{}", centralOffer.toString());
         return (ResponseEntity<T>) helper.validateAndExecute(updateValidator, bindingResult, centralOffer, () -> service.updateOffer(centralOffer));
     }
 
-    @PostMapping("/deleteOffer")
+    @PostMapping(AllEndPoints.DELETE_OFFER)
     public <T> ResponseEntity<T> deleteOffer(@RequestParam("offerId") int offerId) {
         LOGGER.trace("Entering into deleteOffer method in OfferController with{}", offerId);
         try {

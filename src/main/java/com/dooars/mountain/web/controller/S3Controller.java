@@ -3,6 +3,7 @@
  */
 package com.dooars.mountain.web.controller;
 
+import com.dooars.mountain.constants.AllEndPoints;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,7 @@ import com.dooars.mountain.service.s3.AWSS3Service;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/api/file-service")
+@RequestMapping()
 public class S3Controller {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(S3Controller.class);
@@ -40,7 +41,7 @@ public class S3Controller {
 	}
 	
 
-	@PostMapping("/upload")
+	@PostMapping(AllEndPoints.UPLOAD_FILE)
 	public ResponseEntity<String> uploadFile(@RequestPart(value= "file") final MultipartFile multipartFile) {
 		LOGGER.trace("Entering into uploadFile method in S3Controller with{}", multipartFile.getOriginalFilename());
 		try {

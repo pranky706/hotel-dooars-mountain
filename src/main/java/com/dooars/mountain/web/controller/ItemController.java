@@ -5,6 +5,7 @@ package com.dooars.mountain.web.controller;
 
 import java.util.List;
 
+import com.dooars.mountain.constants.AllEndPoints;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -35,7 +36,6 @@ import com.dooars.mountain.service.item.ItemService;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/api/item-service")
 public class ItemController {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(ItemController.class);
@@ -52,13 +52,13 @@ public class ItemController {
 	}
 	
 	@SuppressWarnings("unchecked")
-	@PostMapping("/addItem")
+	@PostMapping(AllEndPoints.ADD_ITEM)
 	public <T> ResponseEntity<T> addItem(@RequestBody Item item, BindingResult bindingResult) {
 		LOGGER.trace("Entering into addItem method in ItemController with{}", item.toString());
 		return (ResponseEntity<T>) helper.validateAndExecute(validator, bindingResult, item, () -> service.addItem(item));		
 	}
 
-	@PostMapping("/addItems")
+	@PostMapping(AllEndPoints.ADD_ITEMS)
 	public <T> ResponseEntity<T> addItems(@RequestBody List<Item> items) {
 		LOGGER.trace("Entering into getItemByItemId method in ItemController with {}", items.toString());
 		try {
@@ -104,7 +104,7 @@ public class ItemController {
 	}
 	
 
-	@PostMapping("/changeItemAvailability")
+	@PostMapping(AllEndPoints.CHANGE_AVAILABILITY)
 	public <T> ResponseEntity<T> changeItemAvailability(@RequestParam("itemId") int itemId, @RequestParam("status") String status) {
 		LOGGER.trace("Entering into changeItemAvailability method in ItemController with{}", itemId);
 		try {
@@ -116,7 +116,7 @@ public class ItemController {
 	}
 	
 	@SuppressWarnings("unchecked")
-	@PostMapping("/updateOffer")
+	@PostMapping(AllEndPoints.UPDATE_OFFER_ITEM)
 	public <T> ResponseEntity<T> updateOffer(@RequestParam("itemId") int itemId, @RequestBody Offer offer) {
 		LOGGER.trace("Entering into updateOffer method in ItemController with{}", itemId);
 		try {
@@ -132,7 +132,7 @@ public class ItemController {
 		}
 	}
 	
-	@PostMapping("/deleteItem")
+	@PostMapping(AllEndPoints.DELETE_ITEM)
 	public <T> ResponseEntity<T> deleteItem(@RequestParam("itemId") int itemId) {
 		LOGGER.trace("Entering into deleteItem method in ItemController with{}", itemId);
 		try {
@@ -145,7 +145,7 @@ public class ItemController {
 	}
 	
 	@SuppressWarnings("unchecked")
-	@PostMapping("/updateItem")
+	@PostMapping(AllEndPoints.UPDATE_ITEM)
 	public <T> ResponseEntity<T> updateItem(@RequestBody Item item, BindingResult bindingResult) {
 		LOGGER.trace("Entering into updateItem method in ItemController with{}", item.toString());
 		return (ResponseEntity<T>) helper.validateAndExecute(validator, bindingResult, item, () -> service.updateItem(item));		
@@ -153,7 +153,7 @@ public class ItemController {
 	
 	
 	@SuppressWarnings("unchecked")
-	@PostMapping("/getMenu")
+	@PostMapping(AllEndPoints.GET_MENU)
 	public <T> ResponseEntity<T> getMenu() {
 		LOGGER.trace("Entering into getMenu method in ItemController with{}");
 		try {

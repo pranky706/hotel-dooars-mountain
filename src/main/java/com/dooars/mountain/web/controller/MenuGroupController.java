@@ -3,6 +3,7 @@
  */
 package com.dooars.mountain.web.controller;
 
+import com.dooars.mountain.constants.AllEndPoints;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -27,7 +28,6 @@ import com.dooars.mountain.service.menugroup.MenuGroupService;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/api/menu-group-service")
 public class MenuGroupController {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(MenuGroupController.class);
@@ -42,7 +42,7 @@ public class MenuGroupController {
 	
 	
 	@SuppressWarnings("unchecked")
-	@PostMapping("/addMenuGroup")
+	@PostMapping(AllEndPoints.ADD_MENU_GROUP)
 	public <T> ResponseEntity<T> addMenuGroup(@RequestParam("groupName") String groupName) {
 		LOGGER.trace("Entering into addMenuGroup method in MenuGroupController with{}", groupName);
 		try {
@@ -83,7 +83,7 @@ public class MenuGroupController {
 		}
 	}
 	
-	@PostMapping("/deleteMenuGroup")
+	@PostMapping(AllEndPoints.DELETE_MENU_GROUP)
 	public <T> ResponseEntity<T> deleteMenuGroup(@RequestParam("groupId") int groupId) {
 		LOGGER.trace("Entering into deleteMenuGroup method in MenuGroupController with{}", groupId);
 		try {
@@ -96,7 +96,7 @@ public class MenuGroupController {
 	}
 	
 	@SuppressWarnings("unchecked")
-	@PostMapping("/updateMenuGroup")
+	@PostMapping(AllEndPoints.UPDATE_MENU_GROUP)
 	public <T> ResponseEntity<T> updateMenuGroup(@RequestBody MenuGroup menuGroup) {
 		LOGGER.trace("Entering into updateMenuGroup method in MenuGroupController with{}", menuGroup.toString());
 		try {

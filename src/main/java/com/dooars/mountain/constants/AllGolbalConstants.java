@@ -23,4 +23,6 @@ public class AllGolbalConstants {
 	public static final String SERVICE_LAYER = "Service Layer";
 	public static final String DUPLICATE_MSG = "Duplicate entry";
 	public static final String INVALID_NUMBER = "Invalid Mobile Number";
+	public static final String ROLE_USER =  "ROLE_USER";
+	public static final String ROLE_ADMIN =  "ROLE_ADMIN";
 }

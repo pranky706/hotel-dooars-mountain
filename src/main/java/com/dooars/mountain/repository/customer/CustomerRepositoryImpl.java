@@ -48,6 +48,7 @@ public class CustomerRepositoryImpl implements CustomerRepository{
 			LOGGER.trace("Entering into customer mapper");
 			Customer customer = new Customer();
 			customer.setCustName(rs.getString("custName"));
+			customer.setIsAdmin(rs.getString("isAdmin"));
 			customer.setMobileNumber(rs.getLong("mobileNumber"));
 			return customer;
 		}
