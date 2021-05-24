@@ -4,6 +4,7 @@
 package com.dooars.mountain.model.customer;
 
 import java.io.Serializable;
+import java.util.List;
 
 import com.google.common.base.MoreObjects;
 
@@ -22,6 +23,7 @@ public class Customer implements Serializable {
     private String custName;
     private long mobileNumber;
     private String isAdmin;
+    private List<Location> locations;
 
     public String getCustName() {
         return custName;
@@ -47,14 +49,21 @@ public class Customer implements Serializable {
         this.isAdmin = isAdmin;
     }
 
+    public List<Location> getLocations() {
+        return locations;
+    }
+
+    public void setLocations(List<Location> locations) {
+        this.locations = locations;
+    }
+
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
                 .add("custName", custName)
                 .add("mobileNumber", mobileNumber)
                 .add("isAdmin", isAdmin)
+                .add("locations", locations)
                 .toString();
     }
-
-
 }

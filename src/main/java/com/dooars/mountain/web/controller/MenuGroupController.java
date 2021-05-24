@@ -56,7 +56,7 @@ public class MenuGroupController {
 	}
 	
 	@SuppressWarnings("unchecked")
-	@PostMapping("/getAllMenuGroup")
+	@PostMapping("/api/menu-group-service/getAllMenuGroup")
 	public <T> ResponseEntity<T> getAllMenuGroup() {
 		LOGGER.trace("Entering into getAllMenuGroup method in MenuGroupController with{}");
 		try {
@@ -67,7 +67,7 @@ public class MenuGroupController {
 	}
 	
 	@SuppressWarnings("unchecked")
-	@PostMapping("/getMenuGroup")
+	@PostMapping("/api/menu-group-service/getMenuGroup")
 	public <T> ResponseEntity<T> getMenuGroup(@RequestParam("groupId") int groupId) {
 		LOGGER.trace("Entering into getAllMenuGroup method in MenuGroupController with{}", groupId);
 		try {

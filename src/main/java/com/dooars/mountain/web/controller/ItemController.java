@@ -70,7 +70,7 @@ public class ItemController {
 	}
 	
 	@SuppressWarnings("unchecked")
-	@PostMapping("/getItemsByGroupId")
+	@PostMapping("/api/item-service/getItemsByGroupId")
 	public <T> ResponseEntity<T> getItemsByGroupId(@RequestParam("groupId") int groupId) {
 		LOGGER.trace("Entering into getItemsByGroupId method in ItemController with{}", groupId);
 		try {
@@ -87,7 +87,7 @@ public class ItemController {
 	}
 	
 	@SuppressWarnings("unchecked")
-	@PostMapping("/getItemByItemId")
+	@PostMapping("/api/item-service/getItemByItemId")
 	public <T> ResponseEntity<T> getItemByItemId(@RequestParam("itemId") int itemId) {
 		LOGGER.trace("Entering into getItemByItemId method in ItemController with{}", itemId);
 		try {

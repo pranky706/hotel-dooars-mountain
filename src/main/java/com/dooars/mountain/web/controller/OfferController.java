@@ -49,7 +49,7 @@ public class OfferController {
     }
 
     @SuppressWarnings("unchecked")
-    @PostMapping("/getOffer")
+    @PostMapping("/api/offer-service/getOffer")
     public <T> ResponseEntity<T> getOffer() {
         LOGGER.trace("Entering into getOffer method in OfferController with{}");
         try {

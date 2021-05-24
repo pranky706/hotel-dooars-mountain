@@ -3,12 +3,12 @@
  */
 package com.dooars.mountain.service.customer;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import com.dooars.mountain.model.customer.Location;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,10 +36,13 @@ public class CustomerServiceImpl implements CustomerService{
 	private static final Logger LOGGER = LoggerFactory.getLogger(CustomerServiceImpl.class);
 	
 	private final CustomerRepository customerRepo;
+
+	private final ObjectMapper objectMapper;
 	
 	@Autowired
-	CustomerServiceImpl(CustomerRepository customerRepo) {
+	CustomerServiceImpl(CustomerRepository customerRepo, ObjectMapper objectMapper) {
 		this.customerRepo = customerRepo;
+		this.objectMapper = objectMapper;
 	}
 
 	@Override
@@ -86,6 +89,81 @@ public class CustomerServiceImpl implements CustomerService{
 	public Customer getCustomer(long mobileNumber) throws BaseException {
 		LOGGER.trace("Entering into getCustomer method in CustomerServiceImpl with{}", mobileNumber);
 		return customerRepo.getCustomer(mobileNumber);
+	}
+
+	@Override
+	public Location addLocation(Location location, long mobileNumber) throws BaseException, JsonProcessingException {
+		LOGGER.trace("Entering into addLocation method in CustomerServiceImpl with {} {}",location.toString(), mobileNumber);
+		Customer customer = customerRepo.getCustomer(mobileNumber);
+		if ( null == customer)
+			return null;
+		int size = 0;
+		if ( null != customer.getLocations() && customer.getLocations().size() > 0)
+			size = customer.getLocations().size();
+		else
+			customer.setLocations(new ArrayList<>());
+		location.setLocationId(Long.parseLong(mobileNumber + "" + size));
+		List<Location> locations = customer.getLocations();
+		locations.add(location);
+		customerRepo.updateLocation(objectMapper.writeValueAsString(locations), mobileNumber);
+		return location;
+	}
+
+	@Override
+	public Location updateLocation(Location location, long mobileNumber) throws BaseException, JsonProcessingException {
+		LOGGER.trace("Entering into updateLocation method in CustomerServiceImpl with {} {}",location.toString(), mobileNumber);
+		Customer customer = customerRepo.getCustomer(mobileNumber);
+		if ( null == customer)
+			return null;
+		if ( null != customer.getLocations() && customer.getLocations().size() == 0)
+			customer.setLocations(new ArrayList<>());
+		List<Location> locations = customer.getLocations();
+		List<Location> newList = new ArrayList<>();
+		boolean flag = false;
+		for ( Location lo : locations) {
+			if (lo.getLocationId() == location.getLocationId()) {
+				newList.add(location);
+				flag = true;
+			} else {
+				newList.add(lo);
+			}
+		}
+		if (flag == false)
+			return null;
+		customerRepo.updateLocation(objectMapper.writeValueAsString(newList), mobileNumber);
+		return location;
+	}
+
+	@Override
+	public List<Location> getLocations(long mobileNumber) throws BaseException {
+		LOGGER.trace("Entering into getLocations method in CustomerServiceImpl with {}", mobileNumber);
+		return customerRepo.getLocations(mobileNumber);
+	}
+
+	@Override
+	public Location deleteLocation(long locationId, long mobileNumber) throws BaseException, JsonProcessingException {
+		LOGGER.trace("Entering into deleteLocation method in CustomerServiceImpl with {} {}", locationId, mobileNumber);
+		Customer customer = customerRepo.getCustomer(mobileNumber);
+		if ( null == customer)
+			return null;
+		if ( null != customer.getLocations() && customer.getLocations().size() == 0)
+			customer.setLocations(new ArrayList<>());
+		List<Location> locations = customer.getLocations();
+		List<Location> newList = new ArrayList<>();
+		Location location = null;
+		boolean flag = false;
+		for ( Location lo : locations) {
+			if (lo.getLocationId() != locationId) {
+				newList.add(lo);
+			} else {
+				location = lo;
+				flag = true;
+			}
+		}
+		if (flag == false)
+			return null;
+		customerRepo.updateLocation(objectMapper.writeValueAsString(newList), mobileNumber);
+		return location;
 	}
 
 }
