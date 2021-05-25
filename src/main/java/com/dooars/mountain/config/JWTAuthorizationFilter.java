@@ -2,7 +2,12 @@ package com.dooars.mountain.config;
 
 import com.dooars.mountain.constants.AllEndPoints;
 import com.dooars.mountain.constants.AllGolbalConstants;
+import com.dooars.mountain.model.common.BaseException;
+import com.dooars.mountain.model.customer.Customer;
+import com.dooars.mountain.repository.customer.CustomerRepository;
 import io.jsonwebtoken.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +27,12 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
 	private final String PREFIX = "Bearer ";
 	private final String SECRET = "mySecretKey";
 
+	private CustomerRepository repository;
+
+	JWTAuthorizationFilter(CustomerRepository repository) {
+		this.repository = repository;
+	}
+
 	private final Set<String> byPassSet = new HashSet<>(Arrays.asList(AllEndPoints.AUTHENTICATION, AllEndPoints.ADD_CUSTOMER));
 	private final Set<String> adminSet = new HashSet<>(Arrays.asList(AllEndPoints.ADD_ITEM, AllEndPoints.CHANGE_AVAILABILITY,
 			AllEndPoints.ADD_ITEMS,	AllEndPoints.UPDATE_OFFER_ITEM, AllEndPoints.UPDATE_ITEM, AllEndPoints.DELETE_ITEM,
@@ -35,11 +46,16 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
 			if (!byPassSet.contains(request.getRequestURI()) && checkJWTToken(request, response)) {
 				Claims claims = validateToken(request);
 				if (claims.get("authorities") != null && claims.get("sub") != null) {
-					ArrayList<String> roles = (ArrayList<String>) claims.get("authorities");
-					if (AllGolbalConstants.ROLE_USER.equals(roles.get(0)) && adminSet.contains(request.getRequestURI()))
+					Customer customer = repository.getCustomer(Long.parseLong((String) claims.get("sub")));
+					if (null != customer) {
+						ArrayList<String> roles = (ArrayList<String>) claims.get("authorities");
+						if (AllGolbalConstants.ROLE_USER.equals(roles.get(0)) && adminSet.contains(request.getRequestURI()))
+							SecurityContextHolder.clearContext();
+						else
+							setUpSpringAuthentication(claims);
+					} else {
 						SecurityContextHolder.clearContext();
-					else
-						setUpSpringAuthentication(claims);
+					}
 				} else {
 					SecurityContextHolder.clearContext();
 				}
@@ -47,7 +63,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
 				SecurityContextHolder.clearContext();
 			}
 			chain.doFilter(request, response);
-		} catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException e) {
+		} catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | BaseException | SignatureException e) {
 			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 			((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
 			return;

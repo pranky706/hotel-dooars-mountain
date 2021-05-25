@@ -97,16 +97,21 @@ public class CustomerServiceImpl implements CustomerService{
 		Customer customer = customerRepo.getCustomer(mobileNumber);
 		if ( null == customer)
 			return null;
-		int size = 0;
-		if ( null != customer.getLocations() && customer.getLocations().size() > 0)
-			size = customer.getLocations().size();
-		else
+		if ( null == customer.getLocations() && customer.getLocations().size() == 0)
 			customer.setLocations(new ArrayList<>());
-		location.setLocationId(Long.parseLong(mobileNumber + "" + size));
+		location.setLocationId(generateUniqueId());
 		List<Location> locations = customer.getLocations();
 		locations.add(location);
 		customerRepo.updateLocation(objectMapper.writeValueAsString(locations), mobileNumber);
 		return location;
+	}
+
+	private Long generateUniqueId() {
+		long val = -1;
+		do {
+			val = UUID.randomUUID().getMostSignificantBits();
+		} while (val < 0);
+		return val;
 	}
 
 	@Override

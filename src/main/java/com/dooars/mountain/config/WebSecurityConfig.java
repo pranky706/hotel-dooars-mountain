@@ -1,5 +1,6 @@
 package com.dooars.mountain.config;
 
+import com.dooars.mountain.repository.customer.CustomerRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -18,10 +19,16 @@ import com.dooars.mountain.constants.CustomerConstants;
 @Configuration
 class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
+	private CustomerRepository repository;
+
+	WebSecurityConfig(CustomerRepository repository) {
+		this.repository = repository;
+	}
+
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.csrf().disable()
-			.addFilterAfter(new JWTAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
+			.addFilterAfter(new JWTAuthorizationFilter(repository), UsernamePasswordAuthenticationFilter.class)
 			.authorizeRequests()
 			.antMatchers(HttpMethod.POST, "/authentication").permitAll()
 			.antMatchers(HttpMethod.POST, "/customer-service/addCustomer").permitAll()

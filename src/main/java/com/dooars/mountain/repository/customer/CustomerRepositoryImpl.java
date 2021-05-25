@@ -73,7 +73,7 @@ public class CustomerRepositoryImpl implements CustomerRepository{
 					throw new SQLException("Error while converting json list to java object in customer mapper");
 				}
 			} else {
-				customer.setLocations(Collections.emptyList());
+				customer.setLocations(new ArrayList<>());
 			}
 			return customer;
 		}
@@ -93,7 +93,7 @@ public class CustomerRepositoryImpl implements CustomerRepository{
 					throw new SQLException("Error while converting json list to java object in customer mapper");
 				}
 			} else {
-				return Collections.emptyList();
+				return new ArrayList<>();
 			}
 		}
 	};
