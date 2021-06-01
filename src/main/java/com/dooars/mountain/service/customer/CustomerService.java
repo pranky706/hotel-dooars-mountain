@@ -8,7 +8,11 @@ import java.util.Map;
 
 import com.dooars.mountain.model.common.BaseException;
 import com.dooars.mountain.model.customer.Customer;
+import com.dooars.mountain.model.customer.CustomerToken;
 import com.dooars.mountain.model.customer.Location;
+import com.dooars.mountain.model.order.CurrentStatus;
+import com.dooars.mountain.model.order.Order;
+import com.dooars.mountain.web.commands.token.AddPushTokenCommand;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
@@ -24,4 +28,9 @@ public interface CustomerService {
 	Location updateLocation( Location location, long mobileNumber) throws BaseException, JsonProcessingException;
 	List<Location> getLocations(long mobileNumber) throws BaseException;
 	Location deleteLocation( long locationId, long mobileNumber) throws BaseException, JsonProcessingException;
+	Order addOrder(Order order, long mobileNumber) throws BaseException, JsonProcessingException;
+	List<Order> getOrders(long mobileNumber) throws BaseException;
+	Order updateOrderStatus(long orderId, long mobileNumber, CurrentStatus currentStatus) throws BaseException, JsonProcessingException;
+	void addPushToken(AddPushTokenCommand command) throws BaseException, JsonProcessingException;
+	List<CustomerToken> getTokens(long mobileNumber) throws BaseException;
 }

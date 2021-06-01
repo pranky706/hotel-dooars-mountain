@@ -2,6 +2,7 @@ package com.dooars.mountain.config;
 
 import com.dooars.mountain.constants.AllEndPoints;
 import com.dooars.mountain.constants.AllGolbalConstants;
+import com.dooars.mountain.constants.CustomerConstants;
 import com.dooars.mountain.model.common.BaseException;
 import com.dooars.mountain.model.customer.Customer;
 import com.dooars.mountain.repository.customer.CustomerRepository;
@@ -34,11 +35,6 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
 	}
 
 	private final Set<String> byPassSet = new HashSet<>(Arrays.asList(AllEndPoints.AUTHENTICATION, AllEndPoints.ADD_CUSTOMER));
-	private final Set<String> adminSet = new HashSet<>(Arrays.asList(AllEndPoints.ADD_ITEM, AllEndPoints.CHANGE_AVAILABILITY,
-			AllEndPoints.ADD_ITEMS,	AllEndPoints.UPDATE_OFFER_ITEM, AllEndPoints.UPDATE_ITEM, AllEndPoints.DELETE_ITEM,
-			AllEndPoints.MENU_GROUP_SERVICE, AllEndPoints.ADD_MENU_GROUP, AllEndPoints.DELETE_MENU_GROUP,
-			AllEndPoints.UPDATE_MENU_GROUP, AllEndPoints.OFFER_SERVICE, AllEndPoints.ADD_OFFER, AllEndPoints.UPDATE_OFFER,
-			AllEndPoints.DELETE_OFFER, AllEndPoints.FILE_SERVICE, AllEndPoints.UPLOAD_FILE));
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
@@ -49,7 +45,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
 					Customer customer = repository.getCustomer(Long.parseLong((String) claims.get("sub")));
 					if (null != customer) {
 						ArrayList<String> roles = (ArrayList<String>) claims.get("authorities");
-						if (AllGolbalConstants.ROLE_USER.equals(roles.get(0)) && adminSet.contains(request.getRequestURI()))
+						if (AllGolbalConstants.ROLE_USER.equals(roles.get(0)) && request.getRequestURI().contains("/admin/"))
 							SecurityContextHolder.clearContext();
 						else
 							setUpSpringAuthentication(claims);

@@ -6,7 +6,11 @@ package com.dooars.mountain.service.customer;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.dooars.mountain.model.customer.CustomerToken;
 import com.dooars.mountain.model.customer.Location;
+import com.dooars.mountain.model.order.CurrentStatus;
+import com.dooars.mountain.model.order.Order;
+import com.dooars.mountain.web.commands.token.AddPushTokenCommand;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -97,13 +101,29 @@ public class CustomerServiceImpl implements CustomerService{
 		Customer customer = customerRepo.getCustomer(mobileNumber);
 		if ( null == customer)
 			return null;
-		if ( null == customer.getLocations() && customer.getLocations().size() == 0)
+		if ( null == customer.getLocations() || customer.getLocations().size() == 0)
 			customer.setLocations(new ArrayList<>());
 		location.setLocationId(generateUniqueId());
 		List<Location> locations = customer.getLocations();
 		locations.add(location);
 		customerRepo.updateLocation(objectMapper.writeValueAsString(locations), mobileNumber);
 		return location;
+	}
+
+	@Override
+	public Order addOrder(Order order, long mobileNumber) throws BaseException, JsonProcessingException {
+		LOGGER.trace("Entering into addOrder method in CustomerServiceImpl with {} {}",order.toString(), mobileNumber);
+		Customer customer = customerRepo.getCustomer(mobileNumber);
+		if ( null == customer)
+			return null;
+		if ( null == customer.getOrders() || customer.getOrders().size() == 0)
+			customer.setOrders(new ArrayList<>());
+		order.setOrderId(generateUniqueId());
+		order.setCurrentStatus(CurrentStatus.PLACED);
+		List<Order> orders = customer.getOrders();
+		orders.add(order);
+		customerRepo.updateOrder(objectMapper.writeValueAsString(orders), mobileNumber);
+		return order;
 	}
 
 	private Long generateUniqueId() {
@@ -120,8 +140,8 @@ public class CustomerServiceImpl implements CustomerService{
 		Customer customer = customerRepo.getCustomer(mobileNumber);
 		if ( null == customer)
 			return null;
-		if ( null != customer.getLocations() && customer.getLocations().size() == 0)
-			customer.setLocations(new ArrayList<>());
+		if ( null == customer.getLocations() || customer.getLocations().size() == 0)
+			return null;
 		List<Location> locations = customer.getLocations();
 		List<Location> newList = new ArrayList<>();
 		boolean flag = false;
@@ -140,9 +160,78 @@ public class CustomerServiceImpl implements CustomerService{
 	}
 
 	@Override
+	public Order updateOrderStatus(long orderId, long mobileNumber, CurrentStatus currentStatus) throws BaseException, JsonProcessingException {
+		LOGGER.trace("Entering into updateLocation method in CustomerServiceImpl with {} {} {}",orderId, mobileNumber, currentStatus);
+		Customer customer = customerRepo.getCustomer(mobileNumber);
+		if ( null == customer)
+			return null;
+		if ( null == customer.getOrders() || customer.getOrders().size() == 0)
+			return null;
+		List<Order> orders = customer.getOrders();
+		boolean flag = false;
+		Order order = null;
+		for ( Order or : orders) {
+			if (or.getOrderId() == orderId) {
+				or.setCurrentStatus(currentStatus);
+				order = or;
+				flag = true;
+				break;
+			}
+		}
+		if (flag == false)
+			return null;
+		customerRepo.updateOrder(objectMapper.writeValueAsString(orders), mobileNumber);
+		return order;
+	}
+
+	@Override
+	public void addPushToken(AddPushTokenCommand command) throws BaseException, JsonProcessingException {
+		LOGGER.trace("Entering into addPushToken method in CustomerServiceImpl with {}", command.toString());
+		Customer customer = customerRepo.getCustomer(command.getMobileNumber());
+		if ( null != customer) {
+			List<CustomerToken> tokens = customerRepo.getCustomerTokens(command.getMobileNumber());
+			if ( null != tokens ) {
+				CustomerToken customerToken = null;
+				for ( CustomerToken  ct : tokens) {
+					if ( ct.getPlatform().equals(command.getPlatform())) {
+						customerToken = ct;
+					}
+				}
+				if ( null == customerToken){
+					customerToken = new CustomerToken();
+					customerToken.setPlatform(command.getPlatform());
+					customerToken.setPushTokens(new HashSet<>());
+					tokens.add(customerToken);
+				}
+				customerToken.addToken(command.getPushToken());
+			} else {
+				tokens = new ArrayList<>();
+				CustomerToken customerToken = new CustomerToken();
+				customerToken.setPlatform(command.getPlatform());
+				customerToken.setPushTokens(new HashSet<>());
+				customerToken.addToken(command.getPushToken());
+				tokens.add(customerToken);
+			}
+			customerRepo.updatePushToken(objectMapper.writeValueAsString(tokens), command.getMobileNumber());
+		}
+	}
+
+	@Override
+	public List<CustomerToken> getTokens(long mobileNumber) throws BaseException {
+		LOGGER.trace("Entering into getTokens method in CustomerServiceImpl with {}", mobileNumber);
+		return customerRepo.getCustomerTokens(mobileNumber);
+	}
+
+	@Override
 	public List<Location> getLocations(long mobileNumber) throws BaseException {
 		LOGGER.trace("Entering into getLocations method in CustomerServiceImpl with {}", mobileNumber);
 		return customerRepo.getLocations(mobileNumber);
+	}
+
+	@Override
+	public List<Order> getOrders(long mobileNumber) throws BaseException {
+		LOGGER.trace("Entering into getOrders method in CustomerServiceImpl with {}", mobileNumber);
+		return customerRepo.getOrders(mobileNumber);
 	}
 
 	@Override
@@ -151,8 +240,8 @@ public class CustomerServiceImpl implements CustomerService{
 		Customer customer = customerRepo.getCustomer(mobileNumber);
 		if ( null == customer)
 			return null;
-		if ( null != customer.getLocations() && customer.getLocations().size() == 0)
-			customer.setLocations(new ArrayList<>());
+		if ( null == customer.getLocations() && customer.getLocations().size() == 0)
+			return null;
 		List<Location> locations = customer.getLocations();
 		List<Location> newList = new ArrayList<>();
 		Location location = null;

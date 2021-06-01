@@ -153,7 +153,7 @@ public class ItemController {
 	
 	
 	@SuppressWarnings("unchecked")
-	@PostMapping(AllEndPoints.GET_MENU)
+	@PostMapping("/api/item-service/getMenu")
 	public <T> ResponseEntity<T> getMenu() {
 		LOGGER.trace("Entering into getMenu method in ItemController with{}");
 		try {

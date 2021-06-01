@@ -4,7 +4,11 @@
 package com.dooars.mountain.web.controller;
 
 import com.dooars.mountain.model.common.BaseException;
+import com.dooars.mountain.model.customer.CustomerToken;
 import com.dooars.mountain.model.customer.Location;
+import com.dooars.mountain.model.order.Order;
+import com.dooars.mountain.web.commands.order.UpdateOrderStatus;
+import com.dooars.mountain.web.commands.token.AddPushTokenCommand;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,17 +40,24 @@ public class CustomerController {
 	private static final Logger LOGGER = LoggerFactory.getLogger(CustomerController.class);
 	
 	private final CustomerService service;
-	private final Validator validator, addLocationValidator, updateLocationValidator;
+	private final Validator validator, addLocationValidator, updateLocationValidator,
+			updateOrderStatusValidator, placeOrderValidator, addPushTokenValidator;
 	private ControllerHelper helper;
 	
 	public CustomerController(CustomerService service, @Qualifier("addCustomerValidator") Validator validator,
 							  @Qualifier("addLocationValidator") Validator addLocationValidator,
 							  @Qualifier("updateLocationValidator") Validator updateLocationValidator,
+							  @Qualifier("updateOrderStatusValidator") Validator updateOrderStatusValidator,
+							  @Qualifier("placeOrderValidator") Validator placeOrderValidator,
+							  @Qualifier("addPushTokenValidator") Validator addPushTokenValidator,
 							  ControllerHelper helper) {
 		this.service = service;
 		this.validator = validator;
 		this.addLocationValidator = addLocationValidator;
 		this.updateLocationValidator = updateLocationValidator;
+		this.updateOrderStatusValidator = updateOrderStatusValidator;
+		this.placeOrderValidator = placeOrderValidator;
+		this.addPushTokenValidator = addPushTokenValidator;
 		this.helper = helper;
 	}
 	
@@ -93,6 +104,55 @@ public class CustomerController {
 		}
 	}
 
+	@PostMapping(CustomerConstants.PLACE_ORDER_URL)
+	public <T> ResponseEntity<T> placeOrder(@RequestBody Order order, BindingResult bindingResult) {
+		LOGGER.trace("Entering into placeOrder method in CustomerController with {}", order);
+		try {
+			placeOrderValidator.validate(order, bindingResult);
+			if (bindingResult.hasErrors())
+				return helper.constructFieldErrorResponse(bindingResult);
+			Order orderAdded = service.addOrder(order, order.getMobileNumber());
+			if ( null != orderAdded) {
+				return new ResponseEntity<T>((T) orderAdded, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<T>(HttpStatus.NOT_FOUND);
+			}
+
+		} catch (BaseException | JsonProcessingException e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
+
+	@PostMapping(CustomerConstants.ADD_PUSH_TOKEN_URL)
+	public <T> ResponseEntity<T> addPushToken(@RequestBody AddPushTokenCommand command, BindingResult bindingResult) {
+		LOGGER.trace("Entering into addPushToken method in CustomerController with {}", command.toString());
+		try {
+			addPushTokenValidator.validate(command, bindingResult);
+			if (bindingResult.hasErrors())
+				return helper.constructFieldErrorResponse(bindingResult);
+			service.addPushToken(command);
+			return new ResponseEntity<T>(HttpStatus.OK);
+		} catch (BaseException | JsonProcessingException e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
+
+	@PostMapping(CustomerConstants.GET_PUSH_TOKEN_URL)
+	public <T> ResponseEntity<T> getPushTokens(@RequestParam("mobileNumber") long mobileNumber) {
+		LOGGER.trace("Entering into getPushTokens method in CustomerController with {}", mobileNumber);
+		try {
+			List<CustomerToken> customerTokens = service.getTokens(mobileNumber);
+			if ( null != customerTokens && customerTokens.size() > 0) {
+				return new ResponseEntity<T>((T) customerTokens, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<T>((T) Collections.emptyList(), HttpStatus.NOT_FOUND);
+			}
+
+		} catch (BaseException e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
+
 	@PostMapping(CustomerConstants.GET_LOCATION_URL)
 	public <T> ResponseEntity<T> getLocation(@RequestParam("mobileNumber") long mobileNumber) {
 		LOGGER.trace("Entering into getLocation method in CustomerController with {}", mobileNumber);
@@ -100,6 +160,22 @@ public class CustomerController {
 			List<Location> locations = service.getLocations(mobileNumber);
 			if ( null != locations && locations.size() > 0) {
 				return new ResponseEntity<T>((T) locations, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<T>((T) Collections.emptyList(), HttpStatus.NOT_FOUND);
+			}
+
+		} catch (BaseException e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
+
+	@PostMapping(CustomerConstants.GET_ORDER_URL)
+	public <T> ResponseEntity<T> getOrders(@RequestParam("mobileNumber") long mobileNumber) {
+		LOGGER.trace("Entering into getOrders method in CustomerController with {}", mobileNumber);
+		try {
+			List<Order> orders = service.getOrders(mobileNumber);
+			if ( null != orders && orders.size() > 0) {
+				return new ResponseEntity<T>((T) orders, HttpStatus.OK);
 			} else {
 				return new ResponseEntity<T>((T) Collections.emptyList(), HttpStatus.NOT_FOUND);
 			}
@@ -119,6 +195,25 @@ public class CustomerController {
 			Location updatedLocation = service.updateLocation(location, mobileNumber);
 			if ( null != updatedLocation) {
 				return new ResponseEntity<T>((T) updatedLocation, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<T>(HttpStatus.NOT_FOUND);
+			}
+
+		} catch (BaseException | JsonProcessingException e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
+
+	@PostMapping(CustomerConstants.UPDATE_ORDER_STATUS)
+	public <T> ResponseEntity<T> updateOrderStatus(@RequestBody UpdateOrderStatus updateOrderStatus, BindingResult bindingResult) {
+		LOGGER.trace("Entering into updateOrderStatus method in CustomerController with {}", updateOrderStatus.toString());
+		try {
+			updateOrderStatusValidator.validate(updateOrderStatus, bindingResult);
+			if (bindingResult.hasErrors())
+				return helper.constructFieldErrorResponse(bindingResult);
+			Order order = service.updateOrderStatus(updateOrderStatus.getOrderId(), updateOrderStatus.getMobileNumber(), updateOrderStatus.getCurrentStatus());
+			if ( null != order) {
+				return new ResponseEntity<T>((T) order, HttpStatus.OK);
 			} else {
 				return new ResponseEntity<T>(HttpStatus.NOT_FOUND);
 			}
