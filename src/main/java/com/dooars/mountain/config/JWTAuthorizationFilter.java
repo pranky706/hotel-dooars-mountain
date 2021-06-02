@@ -34,7 +34,8 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
 		this.repository = repository;
 	}
 
-	private final Set<String> byPassSet = new HashSet<>(Arrays.asList(AllEndPoints.AUTHENTICATION, AllEndPoints.ADD_CUSTOMER));
+	private final Set<String> byPassSet = new HashSet<>(Arrays.asList(AllEndPoints.AUTHENTICATION, AllEndPoints.ADD_CUSTOMER,
+			AllEndPoints.LOGIN_URL));
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {

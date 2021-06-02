@@ -29,6 +29,4 @@ public interface CustomerRepository {
 	void updateOrder(String ordersString, long mobileNumber) throws BaseException;
 	void updatePushToken(String tokensString, long mobileNumber) throws BaseException;
 	List<CustomerToken> getCustomerTokens(long mobileNumber) throws BaseException;
-	void updateOTP(int otp, long mobileNumber) throws BaseException;
-	int getOtp(long mobileNumber) throws BaseException;
 }

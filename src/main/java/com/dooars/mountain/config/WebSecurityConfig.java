@@ -1,5 +1,6 @@
 package com.dooars.mountain.config;
 
+import com.dooars.mountain.constants.AllEndPoints;
 import com.dooars.mountain.repository.customer.CustomerRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,6 +33,7 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 			.authorizeRequests()
 			.antMatchers(HttpMethod.POST, "/authentication").permitAll()
 			.antMatchers(HttpMethod.POST, "/customer-service/addCustomer").permitAll()
+				.antMatchers(HttpMethod.POST, AllEndPoints.LOGIN_URL).permitAll()
 			.antMatchers("/swagger-ui.html").permitAll()
 			.anyRequest().authenticated()
 			.and().cors();

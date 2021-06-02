@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>com.dooars.mountain</groupId>
 	<artifactId>hotel-dooars-mountain</artifactId>
-	<version>0.0.13-SNAPSHOT</version>
+	<version>0.0.14-SNAPSHOT</version>
 	<name>hotel-dooars-mountain</name>
 	<description>Project for online food delivery</description>
 	<properties>
@@ -83,6 +83,7 @@
 			<artifactId>aws-java-sdk-s3</artifactId>
 			<version>1.11.1022</version>
 		</dependency>
+
 
 	</dependencies>
 

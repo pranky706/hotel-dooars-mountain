@@ -7,8 +7,7 @@ public class AllEndPoints {
 
     public static final String AUTHENTICATION = "/authentication";
     public static final String ADD_CUSTOMER = "/customer-service/addCustomer";
-    public static final String SEND_OTP_URL = "/api/admin/sms-service/sendOtp";
-    public static final String VERIFY_OTP_URL = "/api/admin/sms-service/verifyOtp";
+    public static final String LOGIN_URL = "/api/admin/login-service/login";
     public static final String ITEM_SERVICE = "/api/admin/item-service/";
     public static final String ADD_ITEM = ITEM_SERVICE + "addItem";
     public static final String CHANGE_AVAILABILITY = ITEM_SERVICE + "changeItemAvailability";

@@ -54,15 +54,12 @@ public class CustomerRepositoryImpl implements CustomerRepository{
 	
 	private final String DELETE_CUSTOMER = "UPDATE customer set isdelete = :isdelete where mobileNumber = :mobileNumber";
 
-	private final String UPDATE_OTP = "UPDATE customer set otp = :otp where mobileNumber = :mobileNumber";
-
 	private final String UPDATE_LOCATION = "UPDATE customer set locations = (:locations)::json where mobileNumber = :mobileNumber";
 
 	private final String UPDATE_ORDER = "UPDATE customer set orders = (:orders)::json where mobileNumber = :mobileNumber";
 
 	private final String GET_ORDER = "select orders as orders from customer where mobileNumber = :mobileNumber and isdelete = :isdelete";
 
-	private final String GET_OTP = "select otp as otp from customer where mobileNumber = :mobileNumber";
 
 	private final String UPDATE_TOKEN = "UPDATE customer set customerTokens = (:customerTokens)::json where mobileNumber = :mobileNumber";
 
@@ -195,15 +192,6 @@ public class CustomerRepositoryImpl implements CustomerRepository{
 	}
 
 	@Override
-	public int getOtp(long mobileNumber) throws BaseException {
-		LOGGER.trace("Entering into getOtp method in CustomerRepositoryImpl with {}", mobileNumber);
-		MapSqlParameterSource namedParameters = new MapSqlParameterSource();
-		namedParameters.addValue("mobileNumber", mobileNumber);
-		return Try.ofSupplier(() -> DataAccessUtils.singleResult(jdbcTemplate.query(GET_OTP, namedParameters, (rs, rowNum) -> rs.getInt("otp"))))
-				.getOrElseThrow(throwable -> new BaseException(throwable.getMessage(), AllGolbalConstants.REPO_LAYER, null));
-	}
-
-	@Override
 	public void deleteCustomer(long mobileNumber) throws BaseException {
 		LOGGER.trace("Entering into deleteCustomer method in CustomerRepositoryImpl with {}", mobileNumber);
 		MapSqlParameterSource namedParameters = new MapSqlParameterSource();
@@ -266,18 +254,6 @@ public class CustomerRepositoryImpl implements CustomerRepository{
 				.getOrElseThrow(throwable -> new BaseException(throwable.getMessage(), AllGolbalConstants.REPO_LAYER, null));
 	}
 
-	@Override
-	public void updateOTP(int otp, long mobileNumber) throws BaseException {
-		LOGGER.trace("Entering into updateOTP method in CustomerRepositoryImpl with {} {}", otp, mobileNumber);
-		MapSqlParameterSource namedParameters = new MapSqlParameterSource();
-		namedParameters.addValue("mobileNumber", mobileNumber);
-		namedParameters.addValue("otp", otp);
-		try {
-			jdbcTemplate.update(UPDATE_OTP, namedParameters);
-		} catch(Exception e) {
-			throw new BaseException(e.getMessage(), AllGolbalConstants.REPO_LAYER, null);
-		}
-	}
 
 	@Override
 	public List<Location> getLocations(long mobileNumber) throws BaseException {
