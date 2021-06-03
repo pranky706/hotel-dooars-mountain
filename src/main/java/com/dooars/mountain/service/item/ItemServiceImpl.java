@@ -36,11 +36,13 @@ public class ItemServiceImpl implements ItemService {
 	
 	private final ItemRepository itemRepo;
 	private final MenuGroupRepository menuRepo;
+	private final MenuGroupRepository menuGroupRepository;
 	
 	@Autowired
-	ItemServiceImpl(ItemRepository itemRepo, MenuGroupRepository menuRepo) {
+	ItemServiceImpl(ItemRepository itemRepo, MenuGroupRepository menuRepo, MenuGroupRepository menuGroupRepository) {
 		this.itemRepo = itemRepo;
 		this.menuRepo = menuRepo;
+		this.menuGroupRepository = menuGroupRepository;
 	}
 
 	@Override
@@ -101,6 +103,14 @@ public class ItemServiceImpl implements ItemService {
 			items.add(mp.getItem());
 			map.put(mp.getGroupName(), items);
 		}
+		List<MenuGroup> menuGroups = menuGroupRepository.getAllMenuGroups();
+		Map<String, Integer> mapMenu = new HashMap<String, Integer>();
+		for (MenuGroup menuGroup : menuGroups) {
+			if ( !map.containsKey(menuGroup.getGroupName())) {
+				map.put(menuGroup.getGroupName(), new ArrayList<Item>());
+				mapMenu.put(menuGroup.getGroupName(), menuGroup.getGroupId());
+			}
+		}
 		Menu menu = new Menu();
 		List<GroupValue> groupValues = new ArrayList<GroupValue>();
 		for (Map.Entry<String,List<Item>> entry : map.entrySet()) {
@@ -109,6 +119,8 @@ public class ItemServiceImpl implements ItemService {
 			List<Item> itemList = entry.getValue();
 			if ( null != itemList && itemList.size() > 0)
 				groupValue.setGroupId(itemList.get(0).getGroupId());
+			else
+				groupValue.setGroupId(mapMenu.get(entry.getKey()));
 			groupValue.setItems(itemList);
 			groupValues.add(groupValue);
 		}
