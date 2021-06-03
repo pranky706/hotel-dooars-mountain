@@ -106,7 +106,10 @@ public class ItemServiceImpl implements ItemService {
 		for (Map.Entry<String,List<Item>> entry : map.entrySet()) {
 			GroupValue groupValue = new GroupValue();
 			groupValue.setGroupName(entry.getKey());
-			groupValue.setItems(entry.getValue());
+			List<Item> itemList = entry.getValue();
+			if ( null != itemList && itemList.size() > 0)
+				groupValue.setGroupId(itemList.get(0).getGroupId());
+			groupValue.setItems(itemList);
 			groupValues.add(groupValue);
 		}
 		menu.setGroupValues(groupValues);

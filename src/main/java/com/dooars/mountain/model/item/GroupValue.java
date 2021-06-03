@@ -3,6 +3,8 @@
  */
 package com.dooars.mountain.model.item;
 
+import com.google.common.base.MoreObjects;
+
 import java.util.List;
 
 /**
@@ -13,7 +15,17 @@ import java.util.List;
 public class GroupValue {
 	
 	private String groupName;
+	private int groupId;
 	private List<Item> items;
+
+	public int getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(int groupId) {
+		this.groupId = groupId;
+	}
+
 	public String getGroupName() {
 		return groupName;
 	}
@@ -26,17 +38,13 @@ public class GroupValue {
 	public void setItems(List<Item> items) {
 		this.items = items;
 	}
+
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("GroupValue [groupName=");
-		builder.append(groupName);
-		builder.append(", items=");
-		builder.append(items);
-		builder.append("]");
-		return builder.toString();
+		return MoreObjects.toStringHelper(this)
+				.add("groupName", groupName)
+				.add("groupId", groupId)
+				.add("items", items)
+				.toString();
 	}
-	
-	
-
 }
