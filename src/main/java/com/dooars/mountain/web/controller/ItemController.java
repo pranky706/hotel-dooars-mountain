@@ -115,23 +115,6 @@ public class ItemController {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
-	@PostMapping(AllEndPoints.UPDATE_OFFER_ITEM)
-	public <T> ResponseEntity<T> updateOffer(@RequestParam("itemId") int itemId, @RequestBody Offer offer) {
-		LOGGER.trace("Entering into updateOffer method in ItemController with{}", itemId);
-		try {
-			Item item = service.updateOffer(offer, itemId);
-			if ( null != item) {
-				return new ResponseEntity<T>((T) item, HttpStatus.OK);
-			} else {
-				return new ResponseEntity<T>(HttpStatus.NOT_FOUND);
-			}
-			
-		} catch (BaseException e) {
-			return helper.constructErrorResponse(e);
-		}
-	}
-	
 	@PostMapping(AllEndPoints.DELETE_ITEM)
 	public <T> ResponseEntity<T> deleteItem(@RequestParam("itemId") int itemId) {
 		LOGGER.trace("Entering into deleteItem method in ItemController with{}", itemId);

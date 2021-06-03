@@ -22,7 +22,6 @@ public interface ItemService {
 	Item getItemById(int itemId) throws BaseException;
 	List<Item> getItemByGroupId(int groupId) throws BaseException;
 	void changeItemAvailability(int itemId, String status) throws BaseException;
-	Item updateOffer(Offer offer, int itemId) throws BaseException;
 	void deleteItem(int itemId) throws BaseException;
 	Item updateItem( Item item) throws BaseException;
 	Menu getMenu() throws BaseException;

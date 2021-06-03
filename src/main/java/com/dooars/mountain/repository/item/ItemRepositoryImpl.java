@@ -52,13 +52,11 @@ public class ItemRepositoryImpl implements ItemRepository {
 	
 	private final String UPDATE_AVAIL = "UPDATE items set isAvailable = :isAvailable where itemId = :itemId";
 	
-	private final String UPDATE_OFFER = "UPDATE items set offer = :offer, offerFrom = :offerFrom, offerUpto = :offerUpto where itemId = :itemId";
-	
 	private final String DELETE_ITEM = "UPDATE items set isdelete = :isdelete where itemId = :itemId";
 	
 	private final String DELETE_ITEM_BY_GROUPID = "UPDATE items set isdelete = :isdelete where groupId = :groupId";
 	
-	private final String UPDATE_ITEM = "UPDATE items set itemName = :itemName, price = :price, description = :description  where itemId = :itemId";
+	private final String UPDATE_ITEM = "UPDATE items set itemName = :itemName, price = :price, description = :description, offer = :offer, offerFrom = :offerFrom, offerUpto = :offerUpto, imageName=:imageName, groupId = :groupId, isAvailable = :isAvailable  where itemId = :itemId";
 	
 	private final String GET_ALL_MENU = "select items.*, menu_group.groupName  from items, menu_group"
 			+ " where items.groupId = menu_group.groupId and menu_group.isDelete = :isdelete and items.isDelete = :isdelete;";
@@ -186,29 +184,6 @@ public class ItemRepositoryImpl implements ItemRepository {
 	}
 
 	@Override
-	public Item updateOffer(Offer offer, int itemId) throws BaseException {
-		LOGGER.trace("Entering into updateOffer method in ItemRepositoryImpl with {} {}", itemId, offer.toString());
-		MapSqlParameterSource namedParameters = new MapSqlParameterSource();
-		namedParameters.addValue("itemId", itemId);
-		namedParameters.addValue("offer", offer.getOffer());
-		namedParameters.addValue("offerFrom", offer.getOfferFrom());
-		namedParameters.addValue("offerUpto", offer.getOfferUpto());
-		try {
-			Item item = getItemById(itemId);
-			if (null == item) {
-				return null;
-			}
-			jdbcTemplate.update(UPDATE_OFFER, namedParameters);
-			item.setOffer(offer.getOffer());
-			item.setOfferFrom(offer.getOfferFrom());
-			item.setOfferFrom(offer.getOfferUpto());
-			return item;
-		} catch(Exception e) {
-			throw new BaseException(e.getMessage(), AllGolbalConstants.REPO_LAYER, null);
-		}
-	}
-
-	@Override
 	public void deleteItem(int itemId) throws BaseException {
 		LOGGER.trace("Entering into deleteItem method in ItemRepositoryImpl with {}", itemId);
 		MapSqlParameterSource namedParameters = new MapSqlParameterSource();
@@ -243,6 +218,12 @@ public class ItemRepositoryImpl implements ItemRepository {
 		namedParameters.addValue("price", item.getPrice());
 		namedParameters.addValue("description", item.getDescription());
 		namedParameters.addValue("itemId", item.getItemId());
+		namedParameters.addValue("offer", item.getOffer());
+		namedParameters.addValue("offerFrom", item.getOfferFrom());
+		namedParameters.addValue("offerUpto", item.getOfferUpto());
+		namedParameters.addValue("groupId", item.getGroupId());
+		namedParameters.addValue("imageName", item.getImageName());
+		namedParameters.addValue("isAvailable", item.getIsAvailable());
 		try {
 			jdbcTemplate.update(UPDATE_ITEM, namedParameters);
 			return getItemById(item.getItemId());

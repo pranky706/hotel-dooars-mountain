@@ -20,6 +20,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.dooars.mountain.model.common.BaseException;
 import com.dooars.mountain.service.s3.AWSS3Service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author Prantik Guha
  * 20-May-2021 
@@ -42,11 +45,13 @@ public class S3Controller {
 	
 
 	@PostMapping(AllEndPoints.UPLOAD_FILE)
-	public ResponseEntity<String> uploadFile(@RequestPart(value= "file") final MultipartFile multipartFile) {
+	public <T> ResponseEntity<T> uploadFile(@RequestPart(value= "file") final MultipartFile multipartFile) {
 		LOGGER.trace("Entering into uploadFile method in S3Controller with{}", multipartFile.getOriginalFilename());
 		try {
 			String name = service.uploadFile(multipartFile);
-	        return new ResponseEntity<>(name, HttpStatus.OK);
+			Map<String, String> map = new HashMap<>();
+			map.put("imageName", name);
+	        return new ResponseEntity<T>((T) map, HttpStatus.OK);
 		} catch (BaseException ex) {
 			LOGGER.error("Error= {} while uploading file.", ex.getMessage());
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

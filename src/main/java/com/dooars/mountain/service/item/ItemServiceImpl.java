@@ -77,12 +77,6 @@ public class ItemServiceImpl implements ItemService {
 	}
 
 	@Override
-	public Item updateOffer(Offer offer, int itemId) throws BaseException {
-		LOGGER.trace("Entering into updateOffer method in ItemServiceImpl with {} {}", offer.toString(), itemId);
-		return itemRepo.updateOffer(offer, itemId);
-	}
-
-	@Override
 	public void deleteItem(int itemId) throws BaseException {
 		LOGGER.trace("Entering into deleteItem method in ItemServiceImpl with {}", itemId);
 		itemRepo.deleteItem(itemId);
@@ -93,22 +87,6 @@ public class ItemServiceImpl implements ItemService {
 		LOGGER.trace("Entering into updateItem method in ItemServiceImpl with {}", item.toString());
 		return itemRepo.updateItem(item);
 	}
-
-//	@Override
-//	public Menu getMenu() throws BaseException {
-//		LOGGER.trace("Entering into getMenu method in ItemServiceImpl with {}");
-//		List<MenuGroup> menuGroups = menuRepo.getAllMenuGroups();
-//		List<GroupValue> groupValues = new ArrayList<GroupValue>();
-//		for (MenuGroup mg : menuGroups) {
-//			GroupValue groupValue = new GroupValue();
-//			groupValue.setGroupName(mg.getGroupName());
-//			groupValue.setItems(itemRepo.getItemByGroupId(mg.getGroupId()));
-//			groupValues.add(groupValue);
-//		}
-//		Menu menu = new Menu();
-//		menu.setGroupValues(groupValues);
-//		return menu;
-//	}
 	
 	@Override
 	public Menu getMenu() throws BaseException {
