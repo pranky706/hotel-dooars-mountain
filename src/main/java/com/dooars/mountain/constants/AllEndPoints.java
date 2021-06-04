@@ -23,6 +23,7 @@ public class AllEndPoints {
     public static final String ADD_OFFER = OFFER_SERVICE + "addOffer";
     public static final String UPDATE_OFFER = OFFER_SERVICE + "updateOffer";
     public static final String DELETE_OFFER = OFFER_SERVICE + "deleteOffer";
+    public static final String GET_OFFER = OFFER_SERVICE + "getOffer";
     public static final String FILE_SERVICE = "/api/admin/file-service/";
     public static final String UPLOAD_FILE = FILE_SERVICE + "upload";
 

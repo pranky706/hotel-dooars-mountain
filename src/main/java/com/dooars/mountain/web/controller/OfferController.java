@@ -3,6 +3,7 @@ package com.dooars.mountain.web.controller;
 
 
 import com.dooars.mountain.constants.AllEndPoints;
+import com.dooars.mountain.constants.AllGolbalConstants;
 import com.dooars.mountain.model.centraloffer.CentralOffer;
 import com.dooars.mountain.model.common.BaseException;
 import com.dooars.mountain.service.centraloffer.CentralOfferService;
@@ -17,7 +18,9 @@ import org.springframework.web.bind.annotation.*;
 
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Prantik Guha on 23-05-2021
@@ -56,6 +59,26 @@ public class OfferController {
             List<CentralOffer> centralOffers = service.getOfferByDate();
             if ( null != centralOffers && centralOffers.size() > 0) {
                 return new ResponseEntity<T>((T) centralOffers, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<T>((T) Collections.emptyList(), HttpStatus.NOT_FOUND);
+            }
+
+        } catch (BaseException e) {
+            return helper.constructErrorResponse(e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @PostMapping(AllEndPoints.GET_OFFER)
+    public <T> ResponseEntity<T> getOfferAdmin() {
+        LOGGER.trace("Entering into getOfferAdmin method in OfferController with{}");
+        try {
+            List<CentralOffer> centralOffers = service.getAllOffer();
+            if ( null != centralOffers && centralOffers.size() > 0) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("bucketUrl", AllGolbalConstants.BUCKET_URL);
+                map.put("offers", centralOffers);
+                return new ResponseEntity<T>((T) map, HttpStatus.OK);
             } else {
                 return new ResponseEntity<T>((T) Collections.emptyList(), HttpStatus.NOT_FOUND);
             }

@@ -3,6 +3,8 @@
  */
 package com.dooars.mountain.model.item;
 
+import com.dooars.mountain.constants.AllGolbalConstants;
+
 import java.util.List;
 
 
@@ -14,7 +16,7 @@ import java.util.List;
 public class Menu {
 	
 
-	private final String bucketUrl = "https://hotel-dooars-mountain-menu.s3.us-east-2.amazonaws.com/";
+	private final String bucketUrl = AllGolbalConstants.BUCKET_URL;
 	
 	
 	

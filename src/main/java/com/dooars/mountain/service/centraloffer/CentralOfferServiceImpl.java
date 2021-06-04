@@ -40,6 +40,12 @@ public class CentralOfferServiceImpl implements CentralOfferService{
     }
 
     @Override
+    public List<CentralOffer> getAllOffer() throws BaseException {
+        LOGGER.trace("Entering into getAllOffer method in CentralOfferServiceImpl with {}");
+        return repository.getAllOffer();
+    }
+
+    @Override
     public CentralOffer updateOffer(CentralOffer centralOffer) throws BaseException {
         LOGGER.trace("Entering into updateOffer method in CentralOfferServiceImpl with {}", centralOffer.toString());
         return repository.updateOffer(centralOffer);

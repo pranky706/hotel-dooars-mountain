@@ -39,6 +39,8 @@ public class CentralOfferRepositoryImpl implements CentralOfferRepository{
             " WHERE offerFrom <= to_date(:date,'YYYY-MM-DD')\n" +
             "   AND offerUpto >= to_date(:date,'YYYY-MM-DD') and isdelete = :isdelete";
 
+    private final String GET_ALL_OFFER= "SELECT * FROM offers WHERE isdelete = :isdelete";
+
     private final String UPDATE_OFFER = "UPDATE offers set offerName = :offerName, offerDescription = :offerDescription, offerImageName = :offerImageName , offer = :offer, offerFrom = :offerFrom, offerUpto = :offerUpto where offerId = :offerId";
 
     private final String DELETE_OFFER = "UPDATE offers set isdelete = :isdelete where offerId = :offerId";
@@ -103,6 +105,15 @@ public class CentralOfferRepositoryImpl implements CentralOfferRepository{
         namedParameters.addValue("isdelete", AllGolbalConstants.FALSE);
         namedParameters.addValue("date", date);
         return Try.ofSupplier(() -> jdbcTemplate.query(GET_OFFER_BY_DATE, namedParameters, mapper))
+                .getOrElseThrow(throwable -> new BaseException(throwable.getMessage(), AllGolbalConstants.REPO_LAYER, null));
+    }
+
+    @Override
+    public List<CentralOffer> getAllOffer() throws BaseException {
+        LOGGER.trace("Entering into getAllOffer method in OfferRepositoryImpl with {}");
+        MapSqlParameterSource namedParameters = new MapSqlParameterSource();
+        namedParameters.addValue("isdelete", AllGolbalConstants.FALSE);
+        return Try.ofSupplier(() -> jdbcTemplate.query(GET_ALL_OFFER, namedParameters, mapper))
                 .getOrElseThrow(throwable -> new BaseException(throwable.getMessage(), AllGolbalConstants.REPO_LAYER, null));
     }
 

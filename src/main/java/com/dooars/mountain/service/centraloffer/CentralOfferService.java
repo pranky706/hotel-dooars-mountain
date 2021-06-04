@@ -12,6 +12,7 @@ public interface CentralOfferService {
 
     CentralOffer addOffer(CentralOffer centralOffer) throws BaseException;
     List<CentralOffer> getOfferByDate() throws BaseException;
+    List<CentralOffer> getAllOffer() throws BaseException;
     CentralOffer updateOffer(CentralOffer centralOffer) throws BaseException;
     void deleteOffer(long offerId) throws BaseException;
 }
