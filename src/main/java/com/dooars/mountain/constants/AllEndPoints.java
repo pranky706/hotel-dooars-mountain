@@ -29,5 +29,11 @@ public class AllEndPoints {
     public static final String GET_OFFER = OFFER_SERVICE + "getOffer";
     public static final String FILE_SERVICE = "/api/admin/file-service/";
     public static final String UPLOAD_FILE = FILE_SERVICE + "upload";
+    public static final String DELIVERY_BOY_SERVICE = "/api/admin/delivery-boy-service/";
+    public static final String ADD_DELIVERY_BOY = DELIVERY_BOY_SERVICE + "addDeliveryBoy";
+    public static final String GET_DELIVERY_BOY = DELIVERY_BOY_SERVICE + "getDeliveryBoy";
+    public static final String GET_ALL_DELIVERY_BOY = DELIVERY_BOY_SERVICE + "getAllDeliveryBoy";
+    public static final String UPDATE_DELIVERY_BOY = DELIVERY_BOY_SERVICE + "updateDeliveryBoy";
+    public static final String DELETE_DELIVERY_BOY = DELIVERY_BOY_SERVICE + "deleteDeliveryBoy";
 
 }

@@ -8,6 +8,8 @@ import com.dooars.mountain.constants.AllGolbalConstants;
 import com.dooars.mountain.model.common.BaseException;
 import com.dooars.mountain.model.customer.CustomerToken;
 import com.dooars.mountain.model.customer.Location;
+import com.dooars.mountain.model.customer.Platform;
+import com.dooars.mountain.model.deliveryboy.DeliveryBoy;
 import com.dooars.mountain.model.order.CurrentStatus;
 import com.dooars.mountain.model.order.Order;
 import com.dooars.mountain.web.commands.order.UpdateOrderStatus;
@@ -27,6 +29,7 @@ import com.dooars.mountain.model.customer.Customer;
 import com.dooars.mountain.service.customer.CustomerService;
 import com.dooars.mountain.constants.CustomerConstants;
 
+import java.security.SignatureException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -101,7 +104,7 @@ public class CustomerController {
 			if ( null != addedLocation) {
 				return new ResponseEntity<T>((T) addedLocation, HttpStatus.OK);
 			} else {
-				return new ResponseEntity<T>(HttpStatus.NOT_FOUND);
+				return new ResponseEntity<T>(HttpStatus.BAD_REQUEST);
 			}
 
 		} catch (BaseException | JsonProcessingException e) {
@@ -116,16 +119,18 @@ public class CustomerController {
 			placeOrderValidator.validate(order, bindingResult);
 			if (bindingResult.hasErrors())
 				return helper.constructFieldErrorResponse(bindingResult);
+			if (!service.verifySign(order, order.getMobileNumber()))
+				return new ResponseEntity<T>(HttpStatus.CONFLICT);
 			Order orderAdded = service.addOrder(order, order.getMobileNumber());
 			if ( null != orderAdded) {
 				return new ResponseEntity<T>((T) orderAdded, HttpStatus.OK);
 			} else {
 				Map<String, Object> map = new HashMap<>();
-				map.put("message", "Location Not found");
-				return new ResponseEntity<T>((T) map, HttpStatus.NOT_FOUND);
+				map.put("message", "Location Not found or we currently do not deliver to this location.");
+				return new ResponseEntity<T>((T) map, HttpStatus.BAD_REQUEST);
 			}
 
-		} catch (BaseException | JsonProcessingException e) {
+		} catch (BaseException | JsonProcessingException | SignatureException e) {
 			return helper.constructErrorResponse(e);
 		}
 	}
@@ -311,5 +316,56 @@ public class CustomerController {
 		}
 	}
 
+	@PostMapping(CustomerConstants.ADD_DELIVERY_BOY_TO_ORDER_URL)
+	public <T> ResponseEntity<T> addDeliveryBoy(@RequestParam("orderId") long orderId, @RequestBody DeliveryBoy deliveryBoy) {
+		LOGGER.trace("Entering into addDeliveryBoy method in CustomerController with {} {}", orderId, deliveryBoy.toString());
+		try {
+			if ( null == deliveryBoy) {
+				return new ResponseEntity<T>(HttpStatus.BAD_REQUEST);
+			}
+			if ( null == deliveryBoy.getName() || "".equals(deliveryBoy.getName())) {
+				return new ResponseEntity<T>(HttpStatus.BAD_REQUEST);
+			}
+			if ( 0 == deliveryBoy.getMobile() || String.valueOf(deliveryBoy.getMobile()).length() != 10) {
+				return new ResponseEntity<T>(HttpStatus.BAD_REQUEST);
+			}
+			Order order = service.addDeliveryBoyToOrder(deliveryBoy, orderId);
+			if ( null != order) {
+				return new ResponseEntity<T>((T) order, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<T>(HttpStatus.NOT_FOUND);
+			}
 
+		} catch (BaseException | JsonProcessingException e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
+
+
+	@PostMapping(CustomerConstants.SIGN_OUT_URL)
+	public <T> ResponseEntity<T> signOut(@RequestParam("mobileNumber") long mobileNumber, @RequestParam("platform") Platform platform) {
+		LOGGER.trace("Entering into addDeliveryBoy method in CustomerController with {} {}", mobileNumber, platform);
+		try {
+			if ( 0 == mobileNumber || String.valueOf(mobileNumber).length() != 10) {
+				return new ResponseEntity<T>(HttpStatus.BAD_REQUEST);
+			}
+			service.removePushToken(mobileNumber, platform);
+			return new ResponseEntity<T>(HttpStatus.OK);
+		} catch (BaseException | JsonProcessingException e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
+
+	@PostMapping(CustomerConstants.GET_DELIVERY_CHARGE_URL)
+	public <T> ResponseEntity<T> getDeliveryCharge(@RequestParam("latitude") double latitude, @RequestParam("longitude") double longitude) {
+		LOGGER.trace("Entering into getDeliveryCharge method in CustomerController with {} {}", latitude, longitude);
+		try {
+			double charge = service.getDeliveryCharge(latitude, longitude);
+			Map<String, Object> map = new HashMap<>();
+			map.put("deliveryCharge", charge);
+			return new ResponseEntity<T>((T) map, HttpStatus.OK);
+		} catch (Exception e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
 }

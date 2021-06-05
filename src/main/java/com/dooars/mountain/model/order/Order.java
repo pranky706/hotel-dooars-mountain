@@ -1,6 +1,7 @@
 package com.dooars.mountain.model.order;
 
 import com.dooars.mountain.model.customer.Location;
+import com.dooars.mountain.model.deliveryboy.DeliveryBoy;
 import com.google.common.base.MoreObjects;
 
 import java.io.Serializable;
@@ -23,6 +24,8 @@ public class Order implements Serializable {
     private CurrentStatus currentStatus;
     private String completeAddress;
     private long lastUpdatedAt;
+    private DeliveryBoy deliveryBoy;
+
 
     public String getCustName() {
         return custName;
@@ -112,6 +115,14 @@ public class Order implements Serializable {
         this.lastUpdatedAt = lastUpdatedAt;
     }
 
+    public DeliveryBoy getDeliveryBoy() {
+        return deliveryBoy;
+    }
+
+    public void setDeliveryBoy(DeliveryBoy deliveryBoy) {
+        this.deliveryBoy = deliveryBoy;
+    }
+
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
@@ -126,6 +137,7 @@ public class Order implements Serializable {
                 .add("currentStatus", currentStatus)
                 .add("completeAddress", completeAddress)
                 .add("lastUpdatedAt", lastUpdatedAt)
+                .add("deliveryBoy", deliveryBoy)
                 .toString();
     }
 }

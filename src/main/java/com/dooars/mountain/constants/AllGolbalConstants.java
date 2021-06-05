@@ -3,6 +3,8 @@
  */
 package com.dooars.mountain.constants;
 
+import java.util.Set;
+
 /**
  * @author Prantik Guha
  * 19-May-2021 
@@ -25,5 +27,9 @@ public class AllGolbalConstants {
 	public static final String INVALID_NUMBER = "Invalid Mobile Number";
 	public static final String ROLE_USER =  "ROLE_USER";
 	public static final String ROLE_ADMIN =  "ROLE_ADMIN";
+	public static final Integer  PINCODE_SET[] =  {736121, 736122, 736123};
+	public static final double HOTEL_LAT = 26.4881718;
+	public static final double HOTEL_LON = 89.5267149;
 	public static final String BUCKET_URL = "https://hotel-dooars-mountain-menu.s3.us-east-2.amazonaws.com/";
+	public static final String RAZORPAY_SECRET = "Ug9e74TgbJS6Em7MXNMRQEi6";
 }

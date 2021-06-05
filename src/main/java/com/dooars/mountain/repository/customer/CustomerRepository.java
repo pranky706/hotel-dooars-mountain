@@ -33,6 +33,7 @@ public interface CustomerRepository {
 	List<Location> getLocations( long mobileNumber) throws BaseException;
 	List<Order> getOrders(long mobileNumber) throws BaseException;
 	Order getOrderByIdAndNumber(long mobileNumber, long orderId) throws BaseException;
+	Order getOrderById(long orderId) throws BaseException;
 	Location getLocationByIdAndNumber(long mobileNumber, long locationId) throws BaseException;
 	List<Order> getAllOrders(int noOfObjects, int currentPage) throws BaseException;
 	List<Order> getAllOrdersNotCompleted(int noOfObjects, int currentPage) throws BaseException;

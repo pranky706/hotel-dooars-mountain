@@ -70,6 +70,8 @@ public class CustomerRepositoryImpl implements CustomerRepository{
 
 	private final String GET_ORDER = "select orders as orders from orders where mobileNumber = :mobileNumber";
 
+	private final String GET_ORDER_BY_ORDER_ID = "select orders as orders from orders where orderId = :orderId";
+
 	private final String GET_ORDER_BY_ID = "select orders as orders from orders where mobileNumber = :mobileNumber and orderId = :orderId";
 
 	private final String GET_LOCATION_BY_ID = "select location as location from location where mobileNumber = :mobileNumber and locationId = :locationId";
@@ -367,6 +369,15 @@ public class CustomerRepositoryImpl implements CustomerRepository{
 		namedParameters.addValue("mobileNumber", mobileNumber);
 		namedParameters.addValue("orderId", orderId);
 		return Try.ofSupplier(() -> DataAccessUtils.singleResult(jdbcTemplate.query(GET_ORDER_BY_ID, namedParameters, orderMapper)))
+				.getOrElseThrow(throwable -> new BaseException(throwable.getMessage(), AllGolbalConstants.REPO_LAYER, null));
+	}
+
+	@Override
+	public Order getOrderById(long orderId) throws BaseException {
+		LOGGER.trace("Entering into getOrderById method in CustomerRepositoryImpl with {}", orderId);
+		MapSqlParameterSource namedParameters = new MapSqlParameterSource();
+		namedParameters.addValue("orderId", orderId);
+		return Try.ofSupplier(() -> DataAccessUtils.singleResult(jdbcTemplate.query(GET_ORDER_BY_ORDER_ID, namedParameters, orderMapper)))
 				.getOrElseThrow(throwable -> new BaseException(throwable.getMessage(), AllGolbalConstants.REPO_LAYER, null));
 	}
 
