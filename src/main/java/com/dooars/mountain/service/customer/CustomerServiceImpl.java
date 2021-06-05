@@ -6,6 +6,7 @@ package com.dooars.mountain.service.customer;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.dooars.mountain.constants.FireBaseConstants;
 import com.dooars.mountain.model.customer.CustomerToken;
 import com.dooars.mountain.model.customer.Location;
 import com.dooars.mountain.model.order.CurrentStatus;
@@ -16,6 +17,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Service;
@@ -27,6 +31,7 @@ import com.dooars.mountain.repository.customer.CustomerRepository;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * @author Prantik Guha
@@ -42,11 +47,14 @@ public class CustomerServiceImpl implements CustomerService{
 	private final CustomerRepository customerRepo;
 
 	private final ObjectMapper objectMapper;
+
+	private final RestTemplate restTemplate;
 	
 	@Autowired
-	CustomerServiceImpl(CustomerRepository customerRepo, ObjectMapper objectMapper) {
+	CustomerServiceImpl(CustomerRepository customerRepo, ObjectMapper objectMapper, RestTemplate restTemplate) {
 		this.customerRepo = customerRepo;
 		this.objectMapper = objectMapper;
+		this.restTemplate = restTemplate;
 	}
 
 	@Override
@@ -120,11 +128,12 @@ public class CustomerServiceImpl implements CustomerService{
 	}
 
 	private Long generateUniqueId() {
-		long val = -1;
-		do {
-			val = UUID.randomUUID().getMostSignificantBits();
-		} while (val < 0);
-		return val;
+		UUID idOne = UUID.randomUUID();
+		String str = "" + idOne;
+		int uid = str.hashCode();
+		String filterStr = "" + uid;
+		str = filterStr.replaceAll("-", "");
+		return Long.parseLong(str);
 	}
 
 	@Override
@@ -141,8 +150,34 @@ public class CustomerServiceImpl implements CustomerService{
 		if (null != order) {
 			order.setCurrentStatus(currentStatus);
 			customerRepo.updateOrder(objectMapper.writeValueAsString(order),mobileNumber,orderId);
+			List<CustomerToken> customerTokens = customerRepo.getCustomerTokens(mobileNumber);
+			for (CustomerToken ct : customerTokens) {
+				for (String token : ct.getPushTokens()) {
+					Map<String, Object> request = makeRequestForPushNotification(token, currentStatus.toString());
+					HttpHeaders headers = new HttpHeaders();
+					headers.add("Authorization", FireBaseConstants.KEY);
+					HttpEntity<Map> entity = new HttpEntity<Map>(request,headers);
+					String response = restTemplate.exchange(
+							FireBaseConstants.URL, HttpMethod.POST, entity, String.class).getBody();
+					LOGGER.trace(" Response from firebase {}", response);
+				}
+			}
 		}
 		return order;
+	}
+
+	private Map<String, Object> makeRequestForPushNotification(String token, String status) {
+		Map<String, Object> map = new HashMap<>();
+		map.put("to", token);
+		map.put("collapse_key", "type_a");
+		Map<String, Object> notificationMap = new HashMap<>();
+		notificationMap.put("title", "Notification from Hotel Dooars Mountain");
+		notificationMap.put("body", "Your order status is " + status + ".");
+		map.put("notification", notificationMap);
+		Map<String, Object> dataMap = new HashMap<>();
+		dataMap.put("message", "Hello");
+		map.put("data", dataMap);
+		return map;
 	}
 
 	@Override
