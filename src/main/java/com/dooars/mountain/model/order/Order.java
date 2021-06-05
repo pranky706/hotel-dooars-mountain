@@ -1,5 +1,6 @@
 package com.dooars.mountain.model.order;
 
+import com.dooars.mountain.model.customer.Location;
 import com.google.common.base.MoreObjects;
 
 import java.io.Serializable;
@@ -14,13 +15,22 @@ public class Order implements Serializable {
     private long orderId;
     private Razorpay razorpay;
     private long mobileNumber;
-    private long locationId;
+    private String custName;
+    private Location location;
     private long createdAt;
     private OrderDetails orderDetails;
     private PaymentMode paymentMode;
     private CurrentStatus currentStatus;
     private String completeAddress;
     private long lastUpdatedAt;
+
+    public String getCustName() {
+        return custName;
+    }
+
+    public void setCustName(String custName) {
+        this.custName = custName;
+    }
 
     public long getOrderId() {
         return orderId;
@@ -46,12 +56,12 @@ public class Order implements Serializable {
         this.mobileNumber = mobileNumber;
     }
 
-    public long getLocationId() {
-        return locationId;
+    public Location getLocation() {
+        return location;
     }
 
-    public void setLocationId(long locationId) {
-        this.locationId = locationId;
+    public void setLocation(Location location) {
+        this.location = location;
     }
 
     public long getCreatedAt() {
@@ -108,7 +118,8 @@ public class Order implements Serializable {
                 .add("orderId", orderId)
                 .add("razorpay", razorpay)
                 .add("mobileNumber", mobileNumber)
-                .add("locationId", locationId)
+                .add("custName", custName)
+                .add("location", location)
                 .add("createdAt", createdAt)
                 .add("orderDetails", orderDetails)
                 .add("paymentMode", paymentMode)

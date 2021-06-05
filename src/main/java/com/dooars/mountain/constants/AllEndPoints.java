@@ -8,6 +8,9 @@ public class AllEndPoints {
     public static final String AUTHENTICATION = "/authentication";
     public static final String ADD_CUSTOMER = "/customer-service/addCustomer";
     public static final String LOGIN_URL = "/api/admin/login-service/login";
+    public static final String GET_ALL_ORDER_URL = "/api/admin/customer-service/getOrders";
+    public static final String GET_ALL_ORDER_BY_STATUS_URL = "/api/admin/customer-service/getOrdersByStatus";
+    public static final String GET_ALL_ORDER_NOT_DELIVERED_URL = "/api/admin/customer-service/getOrdersNotDelivered";
     public static final String ITEM_SERVICE = "/api/admin/item-service/";
     public static final String ADD_ITEM = ITEM_SERVICE + "addItem";
     public static final String CHANGE_AVAILABILITY = ITEM_SERVICE + "changeItemAvailability";

@@ -24,8 +24,6 @@ public class Customer implements Serializable {
     private String custName;
     private long mobileNumber;
     private String isAdmin;
-    private List<Location> locations;
-    private List<Order> orders;
 
     public String getCustName() {
         return custName;
@@ -51,30 +49,12 @@ public class Customer implements Serializable {
         this.isAdmin = isAdmin;
     }
 
-    public List<Location> getLocations() {
-        return locations;
-    }
-
-    public void setLocations(List<Location> locations) {
-        this.locations = locations;
-    }
-
-    public List<Order> getOrders() {
-        return orders;
-    }
-
-    public void setOrders(List<Order> orders) {
-        this.orders = orders;
-    }
-
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
                 .add("custName", custName)
                 .add("mobileNumber", mobileNumber)
                 .add("isAdmin", isAdmin)
-                .add("locations", locations)
-                .add("orders", orders)
                 .toString();
     }
 }

@@ -3,9 +3,12 @@
  */
 package com.dooars.mountain.web.controller;
 
+import com.dooars.mountain.constants.AllEndPoints;
+import com.dooars.mountain.constants.AllGolbalConstants;
 import com.dooars.mountain.model.common.BaseException;
 import com.dooars.mountain.model.customer.CustomerToken;
 import com.dooars.mountain.model.customer.Location;
+import com.dooars.mountain.model.order.CurrentStatus;
 import com.dooars.mountain.model.order.Order;
 import com.dooars.mountain.web.commands.order.UpdateOrderStatus;
 import com.dooars.mountain.web.commands.token.AddPushTokenCommand;
@@ -25,7 +28,9 @@ import com.dooars.mountain.service.customer.CustomerService;
 import com.dooars.mountain.constants.CustomerConstants;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -176,6 +181,69 @@ public class CustomerController {
 			List<Order> orders = service.getOrders(mobileNumber);
 			if ( null != orders && orders.size() > 0) {
 				return new ResponseEntity<T>((T) orders, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<T>((T) Collections.emptyList(), HttpStatus.NOT_FOUND);
+			}
+
+		} catch (BaseException e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
+
+	@PostMapping(AllEndPoints.GET_ALL_ORDER_URL)
+	public <T> ResponseEntity<T> getAllOrders(@RequestParam("noOfObjects") int noOfObjects,@RequestParam("currentPage") int currentPage) {
+		LOGGER.trace("Entering into getAllOrders method in CustomerController with");
+		try {
+			List<Order> orders = service.getAllOrders(noOfObjects, currentPage);
+			if ( null != orders && orders.size() > 0) {
+				Map<String, Object> map = new HashMap<>();
+				map.put("totalOrderCount", service.getOrderCount());
+				map.put("orders", orders);
+				map.put("currentPage", currentPage);
+				map.put("bucketUrl", AllGolbalConstants.BUCKET_URL);
+				return new ResponseEntity<T>((T) map, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<T>((T) Collections.emptyList(), HttpStatus.NOT_FOUND);
+			}
+
+		} catch (BaseException e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
+
+	@PostMapping(AllEndPoints.GET_ALL_ORDER_BY_STATUS_URL)
+	public <T> ResponseEntity<T> getOrdersByStatus(@RequestParam("currentStatus") CurrentStatus currentStatus, @RequestParam("noOfObjects") int noOfObjects,@RequestParam("currentPage") int currentPage) {
+		LOGGER.trace("Entering into getOrdersByStatus method in CustomerController with {}", currentStatus);
+		try {
+			List<Order> orders = service.getAllOrdersByStatus(currentStatus, noOfObjects, currentPage);
+			if ( null != orders && orders.size() > 0) {
+				Map<String, Object> map = new HashMap<>();
+				map.put("totalOrderCount", service.getOrderCount(currentStatus));
+				map.put("orders", orders);
+				map.put("currentPage", currentPage);
+				map.put("bucketUrl", AllGolbalConstants.BUCKET_URL);
+				return new ResponseEntity<T>((T) map, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<T>((T) Collections.emptyList(), HttpStatus.NOT_FOUND);
+			}
+
+		} catch (BaseException e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
+
+	@PostMapping(AllEndPoints.GET_ALL_ORDER_NOT_DELIVERED_URL)
+	public <T> ResponseEntity<T> getOrdersNotDelivered(@RequestParam("noOfObjects") int noOfObjects,@RequestParam("currentPage") int currentPage) {
+		LOGGER.trace("Entering into getOrdersNotDelivered method in CustomerController with {} {}", noOfObjects, currentPage);
+		try {
+			List<Order> orders = service.getAllOrdersNotCompleted(noOfObjects, currentPage);
+			if ( null != orders && orders.size() > 0) {
+				Map<String, Object> map = new HashMap<>();
+				map.put("totalOrderCount", service.getOrderCountNotCompleted());
+				map.put("orders", orders);
+				map.put("currentPage", currentPage);
+				map.put("bucketUrl", AllGolbalConstants.BUCKET_URL);
+				return new ResponseEntity<T>((T) map, HttpStatus.OK);
 			} else {
 				return new ResponseEntity<T>((T) Collections.emptyList(), HttpStatus.NOT_FOUND);
 			}

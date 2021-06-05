@@ -98,31 +98,19 @@ public class CustomerServiceImpl implements CustomerService{
 	@Override
 	public Location addLocation(Location location, long mobileNumber) throws BaseException, JsonProcessingException {
 		LOGGER.trace("Entering into addLocation method in CustomerServiceImpl with {} {}",location.toString(), mobileNumber);
-		Customer customer = customerRepo.getCustomer(mobileNumber);
-		if ( null == customer)
-			return null;
-		if ( null == customer.getLocations() || customer.getLocations().size() == 0)
-			customer.setLocations(new ArrayList<>());
-		location.setLocationId(generateUniqueId());
-		List<Location> locations = customer.getLocations();
-		locations.add(location);
-		customerRepo.updateLocation(objectMapper.writeValueAsString(locations), mobileNumber);
+		long locationId = generateUniqueId();
+		location.setLocationId(locationId);
+		customerRepo.addLocation(objectMapper.writeValueAsString(location), mobileNumber, locationId);
 		return location;
 	}
 
 	@Override
 	public Order addOrder(Order order, long mobileNumber) throws BaseException, JsonProcessingException {
 		LOGGER.trace("Entering into addOrder method in CustomerServiceImpl with {} {}",order.toString(), mobileNumber);
-		Customer customer = customerRepo.getCustomer(mobileNumber);
-		if ( null == customer)
-			return null;
-		if ( null == customer.getOrders() || customer.getOrders().size() == 0)
-			customer.setOrders(new ArrayList<>());
-		order.setOrderId(generateUniqueId());
+		long orderId = generateUniqueId();
+		order.setOrderId(orderId);
 		order.setCurrentStatus(CurrentStatus.PLACED);
-		List<Order> orders = customer.getOrders();
-		orders.add(order);
-		customerRepo.updateOrder(objectMapper.writeValueAsString(orders), mobileNumber);
+		customerRepo.addOrder(objectMapper.writeValueAsString(order), mobileNumber, orderId);
 		return order;
 	}
 
@@ -137,50 +125,18 @@ public class CustomerServiceImpl implements CustomerService{
 	@Override
 	public Location updateLocation(Location location, long mobileNumber) throws BaseException, JsonProcessingException {
 		LOGGER.trace("Entering into updateLocation method in CustomerServiceImpl with {} {}",location.toString(), mobileNumber);
-		Customer customer = customerRepo.getCustomer(mobileNumber);
-		if ( null == customer)
-			return null;
-		if ( null == customer.getLocations() || customer.getLocations().size() == 0)
-			return null;
-		List<Location> locations = customer.getLocations();
-		List<Location> newList = new ArrayList<>();
-		boolean flag = false;
-		for ( Location lo : locations) {
-			if (lo.getLocationId() == location.getLocationId()) {
-				newList.add(location);
-				flag = true;
-			} else {
-				newList.add(lo);
-			}
-		}
-		if (flag == false)
-			return null;
-		customerRepo.updateLocation(objectMapper.writeValueAsString(newList), mobileNumber);
+		customerRepo.updateLocation(objectMapper.writeValueAsString(location), mobileNumber,location.getLocationId());
 		return location;
 	}
 
 	@Override
 	public Order updateOrderStatus(long orderId, long mobileNumber, CurrentStatus currentStatus) throws BaseException, JsonProcessingException {
 		LOGGER.trace("Entering into updateLocation method in CustomerServiceImpl with {} {} {}",orderId, mobileNumber, currentStatus);
-		Customer customer = customerRepo.getCustomer(mobileNumber);
-		if ( null == customer)
-			return null;
-		if ( null == customer.getOrders() || customer.getOrders().size() == 0)
-			return null;
-		List<Order> orders = customer.getOrders();
-		boolean flag = false;
-		Order order = null;
-		for ( Order or : orders) {
-			if (or.getOrderId() == orderId) {
-				or.setCurrentStatus(currentStatus);
-				order = or;
-				flag = true;
-				break;
-			}
+		Order order = customerRepo.getOrderByIdAndNumber(mobileNumber, orderId);
+		if (null != order) {
+			order.setCurrentStatus(currentStatus);
 		}
-		if (flag == false)
-			return null;
-		customerRepo.updateOrder(objectMapper.writeValueAsString(orders), mobileNumber);
+		customerRepo.updateOrder(objectMapper.writeValueAsString(order),mobileNumber,orderId);
 		return order;
 	}
 
@@ -223,6 +179,24 @@ public class CustomerServiceImpl implements CustomerService{
 	}
 
 	@Override
+	public long getOrderCount() throws BaseException {
+		LOGGER.trace("Entering into getOrderCount method in CustomerServiceImpl with");
+		return customerRepo.getOrderCount();
+	}
+
+	@Override
+	public long getOrderCountNotCompleted() throws BaseException {
+		LOGGER.trace("Entering into getOrderCountNotCompleted method in CustomerServiceImpl with");
+		return customerRepo.getOrderCountNotCompleted();
+	}
+
+	@Override
+	public long getOrderCount(CurrentStatus currentStatus) throws BaseException {
+		LOGGER.trace("Entering into getOrderCount method in CustomerServiceImpl with");
+		return customerRepo.getOrderCount(currentStatus);
+	}
+
+	@Override
 	public List<Location> getLocations(long mobileNumber) throws BaseException {
 		LOGGER.trace("Entering into getLocations method in CustomerServiceImpl with {}", mobileNumber);
 		return customerRepo.getLocations(mobileNumber);
@@ -235,29 +209,37 @@ public class CustomerServiceImpl implements CustomerService{
 	}
 
 	@Override
+	public List<Order> getAllOrders(int noOfObjects, int currentPage) throws BaseException {
+		LOGGER.trace("Entering into getAllOrders method in CustomerServiceImpl with");
+		return customerRepo.getAllOrders(noOfObjects, currentPage);
+	}
+
+	@Override
+	public List<Order> getAllOrdersNotCompleted(int noOfObjects, int currentPage) throws BaseException {
+		LOGGER.trace("Entering into getAllOrdersNotCompleted method in CustomerServiceImpl with");
+		return customerRepo.getAllOrdersNotCompleted(noOfObjects, currentPage);
+	}
+
+	@Override
+	public List<Order> getAllOrdersByStatus(CurrentStatus currentStatus, int noOfObjects, int currentPage) throws BaseException {
+		LOGGER.trace("Entering into getAllOrdersByStatus method in CustomerServiceImpl with {}", currentStatus);
+		return customerRepo.getAllOrders(currentStatus, noOfObjects, currentPage);
+	}
+
+	@Override
 	public Location deleteLocation(long locationId, long mobileNumber) throws BaseException, JsonProcessingException {
 		LOGGER.trace("Entering into deleteLocation method in CustomerServiceImpl with {} {}", locationId, mobileNumber);
-		Customer customer = customerRepo.getCustomer(mobileNumber);
-		if ( null == customer)
-			return null;
-		if ( null == customer.getLocations() && customer.getLocations().size() == 0)
-			return null;
-		List<Location> locations = customer.getLocations();
-		List<Location> newList = new ArrayList<>();
-		Location location = null;
-		boolean flag = false;
-		for ( Location lo : locations) {
-			if (lo.getLocationId() != locationId) {
-				newList.add(lo);
-			} else {
-				location = lo;
-				flag = true;
-			}
-		}
-		if (flag == false)
-			return null;
-		customerRepo.updateLocation(objectMapper.writeValueAsString(newList), mobileNumber);
+		Location location = customerRepo.getLocationByIdAndNumber(mobileNumber, locationId);
+		customerRepo.deleteLocation(locationId, mobileNumber);
 		return location;
+	}
+
+	@Override
+	public Order deleteOrder(long orderId, long mobileNumber) throws BaseException, JsonProcessingException {
+		LOGGER.trace("Entering into deleteOrder method in CustomerServiceImpl with {} {}", orderId, mobileNumber);
+		Order order = customerRepo.getOrderByIdAndNumber(mobileNumber, orderId);
+		customerRepo.deleteOrder(orderId, mobileNumber);
+		return order;
 	}
 
 }

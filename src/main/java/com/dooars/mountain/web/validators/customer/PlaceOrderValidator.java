@@ -24,10 +24,8 @@ public class PlaceOrderValidator  implements Validator {
         Order command = (Order) target;
 
         if (Objects.nonNull(command)) {
-            if (Objects.isNull(command.getLocationId())) {
-                errors.rejectValue("LocationId", "3", "is required");
-            }else if (command.getLocationId() == 0) {
-                errors.rejectValue("LocationId", "2", "is invalid");
+            if (Objects.isNull(command.getLocation())) {
+                errors.rejectValue("Location", "3", "is required");
             }
             if (Objects.isNull(command.getMobileNumber())) {
                 errors.rejectValue("MobileNumber", "3", "is required");

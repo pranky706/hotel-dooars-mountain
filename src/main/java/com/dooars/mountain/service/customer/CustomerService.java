@@ -28,9 +28,16 @@ public interface CustomerService {
 	Location updateLocation( Location location, long mobileNumber) throws BaseException, JsonProcessingException;
 	List<Location> getLocations(long mobileNumber) throws BaseException;
 	Location deleteLocation( long locationId, long mobileNumber) throws BaseException, JsonProcessingException;
+	Order deleteOrder( long orderId, long mobileNumber) throws BaseException, JsonProcessingException;
 	Order addOrder(Order order, long mobileNumber) throws BaseException, JsonProcessingException;
 	List<Order> getOrders(long mobileNumber) throws BaseException;
+	List<Order> getAllOrders(int noOfObjects, int currentPage) throws BaseException;
+	List<Order> getAllOrdersNotCompleted(int noOfObjects, int currentPage) throws BaseException;
+	List<Order> getAllOrdersByStatus(CurrentStatus currentStatus, int noOfObjects, int currentPage) throws BaseException;
 	Order updateOrderStatus(long orderId, long mobileNumber, CurrentStatus currentStatus) throws BaseException, JsonProcessingException;
 	void addPushToken(AddPushTokenCommand command) throws BaseException, JsonProcessingException;
 	List<CustomerToken> getTokens(long mobileNumber) throws BaseException;
+	long getOrderCount() throws BaseException;
+	long getOrderCountNotCompleted() throws BaseException;
+	long getOrderCount(CurrentStatus currentStatus) throws BaseException;
 }
