@@ -120,7 +120,9 @@ public class CustomerController {
 			if ( null != orderAdded) {
 				return new ResponseEntity<T>((T) orderAdded, HttpStatus.OK);
 			} else {
-				return new ResponseEntity<T>(HttpStatus.NOT_FOUND);
+				Map<String, Object> map = new HashMap<>();
+				map.put("message", "Location Not found");
+				return new ResponseEntity<T>((T) map, HttpStatus.NOT_FOUND);
 			}
 
 		} catch (BaseException | JsonProcessingException e) {

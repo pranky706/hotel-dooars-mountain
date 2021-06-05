@@ -110,6 +110,11 @@ public class CustomerServiceImpl implements CustomerService{
 		long orderId = generateUniqueId();
 		order.setOrderId(orderId);
 		order.setCurrentStatus(CurrentStatus.PLACED);
+		if ( null != order.getLocation()) {
+			Location location = customerRepo.getLocationByIdAndNumber(order.getMobileNumber(), order.getLocation().getLocationId());
+			if ( null == location)
+				return null;
+		}
 		customerRepo.addOrder(objectMapper.writeValueAsString(order), mobileNumber, orderId);
 		return order;
 	}
@@ -135,8 +140,8 @@ public class CustomerServiceImpl implements CustomerService{
 		Order order = customerRepo.getOrderByIdAndNumber(mobileNumber, orderId);
 		if (null != order) {
 			order.setCurrentStatus(currentStatus);
+			customerRepo.updateOrder(objectMapper.writeValueAsString(order),mobileNumber,orderId);
 		}
-		customerRepo.updateOrder(objectMapper.writeValueAsString(order),mobileNumber,orderId);
 		return order;
 	}
 
