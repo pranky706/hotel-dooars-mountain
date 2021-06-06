@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.dooars.mountain.model.item.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,8 +42,8 @@ public class ItemRepositoryImpl implements ItemRepository {
 	
 	private final NamedParameterJdbcTemplate jdbcTemplate;
 	
-	private final String ADD_ITEM = "INSERT INTO items(itemName, description, imageName, offer, offerFrom, offerUpto, price, groupId, isAvailable, isdelete)   \r\n" + 
-			"VALUES (:itemName, :description, :imageName, :offer, :offerFrom, :offerUpto, :price, :groupId, :isAvailable, :isdelete);";
+	private final String ADD_ITEM = "INSERT INTO items(itemName, description, imageName, offer, offerFrom, offerUpto, price, groupId, categoryId, isAvailable, isdelete)   \r\n" +
+			"VALUES (:itemName, :description, :imageName, :offer, :offerFrom, :offerUpto, :price, :groupId, :categoryId, :isAvailable, :isdelete);";
 	
 	private final String LAST_ID = "SELECT lastval();";
 	
@@ -56,11 +57,26 @@ public class ItemRepositoryImpl implements ItemRepository {
 	
 	private final String DELETE_ITEM_BY_GROUPID = "UPDATE items set isdelete = :isdelete where groupId = :groupId";
 	
-	private final String UPDATE_ITEM = "UPDATE items set itemName = :itemName, price = :price, description = :description, offer = :offer, offerFrom = :offerFrom, offerUpto = :offerUpto, imageName=:imageName, groupId = :groupId, isAvailable = :isAvailable  where itemId = :itemId";
+	private final String UPDATE_ITEM = "UPDATE items set categoryId = :categoryId, itemName = :itemName, price = :price, description = :description, offer = :offer, offerFrom = :offerFrom, offerUpto = :offerUpto, imageName=:imageName, groupId = :groupId, isAvailable = :isAvailable  where itemId = :itemId";
 	
 	private final String GET_ALL_MENU = "select items.*, menu_group.groupName  from items, menu_group"
 			+ " where items.groupId = menu_group.groupId and menu_group.isDelete = :isdelete and items.isDelete = :isdelete;";
-	
+
+	private final String ADD_CATEGORY = "INSERT into category(categoryName, categoryImageName, isdelete) values(:categoryName, :categoryImageName, :isdelete)";
+
+	private final String GET_ITEMS_BY_CATEGORY_ID = "select * from items where categoryId = :categoryId and isdelete = :isdelete";
+
+	private final String GET_ITEMS = "select * from items where isdelete = :isdelete";
+
+	private final String DELETE_CATEGORY = "UPDATE category set isdelete = :isdelete where categoryId = :categoryId";
+
+	private final String DELETE_ITEM_BY_CATEGORY_ID = "UPDATE items set isdelete = :isdelete where categoryId = :categoryId";
+
+	private final String UPDATE_CATEGORY = "UPDATE category set categoryName = :categoryName, categoryImageName = :categoryImageName where categoryId = :categoryId";
+
+	private final String GET_ALL_CATEGORY = "select * from category where isdelete = :isdelete";
+
+
 	private final RowMapper<Item> mapper = new RowMapper<Item>() {
 		
 		@Override
@@ -84,6 +100,7 @@ public class ItemRepositoryImpl implements ItemRepository {
 			} else {
 				item.setOfferUpto(LocalDate.parse(rs.getString("offerUpto")));
 			}
+			item.setCategoryId(rs.getInt("categoryId"));
 			item.setPrice(rs.getFloat("price"));
 			return item;
 		}
@@ -114,9 +131,23 @@ public class ItemRepositoryImpl implements ItemRepository {
 				item.setOfferUpto(LocalDate.parse(rs.getString("offerUpto")));
 			}
 			item.setPrice(rs.getFloat("price"));
+			item.setCategoryId(rs.getInt("categoryId"));
 			menuPair.setItem(item);
 			menuPair.setGroupName(rs.getString("groupName"));
 			return menuPair;
+		}
+	};
+
+	private final RowMapper<Category> categoryMapper = new RowMapper<Category>() {
+
+		@Override
+		public Category mapRow(ResultSet rs, int rowNum) throws SQLException {
+			LOGGER.trace("Entering into Category mapper");
+			Category category = new Category();
+			category.setCategoryId(rs.getInt("categoryId"));
+			category.setCategoryName(rs.getString("categoryName"));
+			category.setCategoryImageName(rs.getString("categoryImageName"));
+			return category;
 		}
 	};
 	
@@ -137,6 +168,7 @@ public class ItemRepositoryImpl implements ItemRepository {
 		namedParameters.addValue("offerUpto", item.getOfferUpto());
 		namedParameters.addValue("price", item.getPrice());
 		namedParameters.addValue("groupId", item.getGroupId());
+		namedParameters.addValue("categoryId", item.getCategoryId());
 		namedParameters.addValue("isdelete", AllGolbalConstants.FALSE);
 		namedParameters.addValue("isAvailable", AllGolbalConstants.TRUE);
 		try {
@@ -222,6 +254,7 @@ public class ItemRepositoryImpl implements ItemRepository {
 		namedParameters.addValue("offerFrom", item.getOfferFrom());
 		namedParameters.addValue("offerUpto", item.getOfferUpto());
 		namedParameters.addValue("groupId", item.getGroupId());
+		namedParameters.addValue("categoryId", item.getCategoryId());
 		namedParameters.addValue("imageName", item.getImageName());
 		namedParameters.addValue("isAvailable", item.getIsAvailable());
 		try {
@@ -245,6 +278,91 @@ public class ItemRepositoryImpl implements ItemRepository {
 		MapSqlParameterSource namedParameters = new MapSqlParameterSource();
 		namedParameters.addValue("isdelete", AllGolbalConstants.FALSE);
 		return Try.ofSupplier(() -> jdbcTemplate.query(GET_ALL_MENU, namedParameters, menuMapper))
+				.getOrElseThrow(throwable -> new BaseException(throwable.getMessage(), AllGolbalConstants.REPO_LAYER, null));
+	}
+
+	@Override
+	public Category addCategory(Category category) throws BaseException {
+		LOGGER.trace("Entering into addCategory method in ItemRepositoryImpl with {}", category.toString());
+		MapSqlParameterSource namedParameters = new MapSqlParameterSource();
+		namedParameters.addValue("categoryName", category.getCategoryName());
+		namedParameters.addValue("categoryImageName", category.getCategoryImageName());
+		namedParameters.addValue("isdelete", AllGolbalConstants.FALSE);
+		try {
+			jdbcTemplate.update(ADD_CATEGORY, namedParameters);
+			int id = DataAccessUtils.singleResult(jdbcTemplate.query(LAST_ID,(rs, rowNum) -> rs.getInt(1)));
+			category.setCategoryId(id);
+			return category;
+		} catch(Exception e) {
+			throw new BaseException(e.getMessage(), AllGolbalConstants.REPO_LAYER, null);
+		}
+	}
+
+	@Override
+	public List<Item> getItemByCategoryId(int categoryId) throws BaseException {
+		LOGGER.trace("Entering into getItemByCategoryId method in ItemRepositoryImpl with {}", categoryId);
+		MapSqlParameterSource namedParameters = new MapSqlParameterSource();
+		namedParameters.addValue("isdelete", AllGolbalConstants.FALSE);
+		namedParameters.addValue("categoryId", categoryId);
+		return Try.ofSupplier(() -> jdbcTemplate.query(GET_ITEMS_BY_CATEGORY_ID, namedParameters, mapper))
+				.getOrElseThrow(throwable -> new BaseException(throwable.getMessage(), AllGolbalConstants.REPO_LAYER, null));
+	}
+
+	@Override
+	public List<Item> getAllItem() throws BaseException {
+		LOGGER.trace("Entering into getAllItem method in ItemRepositoryImpl with");
+		MapSqlParameterSource namedParameters = new MapSqlParameterSource();
+		namedParameters.addValue("isdelete", AllGolbalConstants.FALSE);
+		return Try.ofSupplier(() -> jdbcTemplate.query(GET_ITEMS, namedParameters, mapper))
+				.getOrElseThrow(throwable -> new BaseException(throwable.getMessage(), AllGolbalConstants.REPO_LAYER, null));
+	}
+
+	@Override
+	public void deleteCategory(int categoryId) throws BaseException {
+		LOGGER.trace("Entering into deleteCategory method in ItemRepositoryImpl with {}", categoryId);
+		MapSqlParameterSource namedParameters = new MapSqlParameterSource();
+		namedParameters.addValue("isdelete", AllGolbalConstants.TRUE);
+		namedParameters.addValue("categoryId", categoryId);
+		try {
+			jdbcTemplate.update(DELETE_CATEGORY, namedParameters);
+		} catch(Exception e) {
+			throw new BaseException(e.getMessage(), AllGolbalConstants.REPO_LAYER, null);
+		}
+	}
+
+	@Override
+	public void deleteItemByCategory(int categoryId) throws BaseException {
+		LOGGER.trace("Entering into deleteItemByCategory method in ItemRepositoryImpl with {}", categoryId);
+		MapSqlParameterSource namedParameters = new MapSqlParameterSource();
+		namedParameters.addValue("isdelete", AllGolbalConstants.TRUE);
+		namedParameters.addValue("categoryId", categoryId);
+		try {
+			jdbcTemplate.update(DELETE_ITEM_BY_CATEGORY_ID, namedParameters);
+		} catch(Exception e) {
+			throw new BaseException(e.getMessage(), AllGolbalConstants.REPO_LAYER, null);
+		}
+	}
+
+	@Override
+	public void updateCategory(Category category) throws BaseException {
+		LOGGER.trace("Entering into updateCategory method in ItemRepositoryImpl with {}", category.toString());
+		MapSqlParameterSource namedParameters = new MapSqlParameterSource();
+		namedParameters.addValue("categoryName", category.getCategoryName());
+		namedParameters.addValue("categoryImageName", category.getCategoryImageName());
+		namedParameters.addValue("categoryId", category.getCategoryId());
+		try {
+			jdbcTemplate.update(UPDATE_CATEGORY, namedParameters);
+		} catch(Exception e) {
+			throw new BaseException(e.getMessage(), AllGolbalConstants.REPO_LAYER, null);
+		}
+	}
+
+	@Override
+	public List<Category> getAllCategory() throws BaseException {
+		LOGGER.trace("Entering into getAllCategory method in ItemRepositoryImpl with");
+		MapSqlParameterSource namedParameters = new MapSqlParameterSource();
+		namedParameters.addValue("isdelete", AllGolbalConstants.FALSE);
+		return Try.ofSupplier(() -> jdbcTemplate.query(GET_ALL_CATEGORY, namedParameters, categoryMapper))
 				.getOrElseThrow(throwable -> new BaseException(throwable.getMessage(), AllGolbalConstants.REPO_LAYER, null));
 	}
 

@@ -43,4 +43,5 @@ public interface CustomerRepository {
 	void deleteOrder(long orderId, long mobileNumber) throws BaseException;
 	void updatePushToken(String tokensString, long mobileNumber) throws BaseException;
 	List<CustomerToken> getCustomerTokens(long mobileNumber) throws BaseException;
+	List<Order> getDailyOrders(long start, long end) throws BaseException;
 }

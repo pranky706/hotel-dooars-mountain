@@ -6,6 +6,7 @@ package com.dooars.mountain.repository.item;
 import java.util.List;
 
 import com.dooars.mountain.model.common.BaseException;
+import com.dooars.mountain.model.item.Category;
 import com.dooars.mountain.model.item.Item;
 import com.dooars.mountain.model.item.MenuPair;
 import com.dooars.mountain.model.item.Offer;
@@ -25,4 +26,11 @@ public interface ItemRepository {
 	void deleteItemByGroupId(int groupId) throws BaseException;
 	Item updateItem( Item item) throws BaseException;
 	List<MenuPair> getAllMenu() throws BaseException;
+	Category addCategory(Category category) throws BaseException;
+	List<Item> getItemByCategoryId(int categoryId) throws BaseException;
+	List<Item> getAllItem() throws BaseException;
+	void deleteCategory(int categoryId) throws BaseException;
+	void updateCategory(Category category) throws BaseException;
+	List<Category> getAllCategory() throws BaseException;
+	void deleteItemByCategory(int categoryId) throws BaseException;
 }

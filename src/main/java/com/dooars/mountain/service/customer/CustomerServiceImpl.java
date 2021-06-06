@@ -4,6 +4,7 @@
 package com.dooars.mountain.service.customer;
 
 import java.security.SignatureException;
+import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -12,9 +13,9 @@ import com.dooars.mountain.model.customer.CustomerToken;
 import com.dooars.mountain.model.customer.Location;
 import com.dooars.mountain.model.customer.Platform;
 import com.dooars.mountain.model.deliveryboy.DeliveryBoy;
-import com.dooars.mountain.model.order.CurrentStatus;
-import com.dooars.mountain.model.order.Order;
-import com.dooars.mountain.model.order.PaymentMode;
+import com.dooars.mountain.model.item.Item;
+import com.dooars.mountain.model.order.*;
+import com.dooars.mountain.repository.item.ItemRepository;
 import com.dooars.mountain.web.commands.token.AddPushTokenCommand;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -58,13 +59,17 @@ public class CustomerServiceImpl implements CustomerService{
 
 	private final RestTemplate restTemplate;
 
+	private final ItemRepository itemRepository;
+
 	private static final String HMAC_SHA256_ALGORITHM = "HmacSHA256";
 	
 	@Autowired
-	CustomerServiceImpl(CustomerRepository customerRepo, ObjectMapper objectMapper, RestTemplate restTemplate) {
+	CustomerServiceImpl(CustomerRepository customerRepo, ObjectMapper objectMapper, RestTemplate restTemplate,
+						ItemRepository itemRepository) {
 		this.customerRepo = customerRepo;
 		this.objectMapper = objectMapper;
 		this.restTemplate = restTemplate;
+		this.itemRepository = itemRepository;
 	}
 
 	@Override
@@ -131,6 +136,11 @@ public class CustomerServiceImpl implements CustomerService{
 		long orderId = generateUniqueId();
 		order.setOrderId(orderId);
 		order.setCurrentStatus(CurrentStatus.PLACED);
+		ZoneId zid = ZoneId.of("Asia/Kolkata");
+		ZonedDateTime lt = ZonedDateTime.now(zid);
+		long currentMiliSec = lt.toInstant().toEpochMilli();
+		order.setCreatedAt(currentMiliSec);
+		order.setLastUpdatedAt(currentMiliSec);
 		if ( null != order.getLocation()) {
 			Set<Integer> set = new HashSet<>(Arrays.asList(AllGolbalConstants.PINCODE_SET));
 			if (! set.contains(order.getLocation().getPincode()))
@@ -162,12 +172,18 @@ public class CustomerServiceImpl implements CustomerService{
 	@Override
 	public double getDeliveryCharge(double lat, double lon) {
 		double distance = distance(lat, AllGolbalConstants.HOTEL_LAT, lon, AllGolbalConstants.HOTEL_LON);
-		if ( distance <= 10)
-			return 15;
-		else if (distance >= 10 && distance <= 15)
+		if ( distance <= 2)
 			return 20;
+		else if (distance > 2 && distance <= 4)
+			return 30;
+		else if (distance > 4 && distance <= 6)
+			return 40;
+		else if (distance > 6 && distance <= 8)
+			return 50;
+		else if (distance > 8 && distance <= 10)
+			return 70;
 		else
-			return 25;
+			return 100;
 	}
 
 	private double distance(double lat1,
@@ -240,11 +256,15 @@ public class CustomerServiceImpl implements CustomerService{
 		Order order = customerRepo.getOrderByIdAndNumber(mobileNumber, orderId);
 		if (null != order) {
 			order.setCurrentStatus(currentStatus);
+			ZoneId zid = ZoneId.of("Asia/Kolkata");
+			ZonedDateTime lt = ZonedDateTime.now(zid);
+			long currentMiliSec = lt.toInstant().toEpochMilli();
+			order.setLastUpdatedAt(currentMiliSec);
 			customerRepo.updateOrder(objectMapper.writeValueAsString(order),mobileNumber,orderId);
 			List<CustomerToken> customerTokens = customerRepo.getCustomerTokens(mobileNumber);
 			for (CustomerToken ct : customerTokens) {
 				for (String token : ct.getPushTokens()) {
-					Map<String, Object> request = makeRequestForPushNotification(token, currentStatus.toString());
+					Map<String, Object> request = makeRequestForPushNotification(token, currentStatus.toString(), order);
 					HttpHeaders headers = new HttpHeaders();
 					headers.add("Authorization", FireBaseConstants.KEY);
 					HttpEntity<Map> entity = new HttpEntity<Map>(request,headers);
@@ -257,7 +277,7 @@ public class CustomerServiceImpl implements CustomerService{
 		return order;
 	}
 
-	private Map<String, Object> makeRequestForPushNotification(String token, String status) {
+	private Map<String, Object> makeRequestForPushNotification(String token, String status, Order order) {
 		Map<String, Object> map = new HashMap<>();
 		map.put("to", token);
 		map.put("collapse_key", "type_a");
@@ -266,7 +286,7 @@ public class CustomerServiceImpl implements CustomerService{
 		notificationMap.put("body", "Your order status is " + status + ".");
 		map.put("notification", notificationMap);
 		Map<String, Object> dataMap = new HashMap<>();
-		dataMap.put("message", "Hello");
+		dataMap.put("order", order);
 		map.put("data", dataMap);
 		return map;
 	}
@@ -351,6 +371,117 @@ public class CustomerServiceImpl implements CustomerService{
 			}
 			customerRepo.updatePushToken(objectMapper.writeValueAsString(newCustomerTokens), mobileNumber);
 		}
+	}
+
+	private List<Order>  getDailyOrders(LocalDate date) throws BaseException {
+		ZoneId z = ZoneId.of( "Asia/Kolkata" );
+		LocalDateTime sLDT = LocalDateTime.parse(date + "T00:00:00");
+		LocalDateTime eLDT = LocalDateTime.parse(date + "T23:59:59");
+		ZonedDateTime sZDT = ZonedDateTime.of(sLDT, z);
+		ZonedDateTime eZDT = ZonedDateTime.of(eLDT, z);
+		long start = sZDT.toInstant().toEpochMilli();
+		long end = eZDT.toInstant().toEpochMilli();
+		return customerRepo.getDailyOrders(start, end);
+	}
+
+	private long  getDailyTimeMili(LocalDate date) throws BaseException {
+		ZoneId z = ZoneId.of( "Asia/Kolkata" );
+		LocalDateTime sLDT = LocalDateTime.parse(date + "T00:00:00");
+		ZonedDateTime sZDT = ZonedDateTime.of(sLDT, z);
+		return sZDT.toInstant().toEpochMilli();
+	}
+
+	@Override
+	public Map<String, Object> getDailySell(LocalDate date) throws BaseException {
+		LOGGER.trace("Entering into getDailySell method in CustomerServiceImpl with {}", date);
+		List<Order> orders = getDailyOrders(date);
+		try {
+			if (null != orders && orders.size() > 0) {
+				List<DailySell> dailySells = new ArrayList<>();
+				double total = 0.0;
+				for ( Order order : orders) {
+					DailySell dailySell = new DailySell();
+					dailySell.setTotal(order.getOrderDetails().getTotal());
+					dailySell.setOrderId(order.getOrderId());
+					dailySells.add(dailySell);
+					total += dailySell.getTotal();
+				}
+				Map<String, Object> map = new HashMap<>();
+				map.put("total", total);
+				map.put("dailySells", dailySells);
+				return map;
+			}
+		} catch (Exception e){
+			throw new BaseException(e.getMessage(), AllGolbalConstants.SERVICE_LAYER, null);
+		}
+		return null;
+	}
+
+	@Override
+	public Map<String, Object> getMonthlySell(int year, int month) throws BaseException {
+		LOGGER.trace("Entering into getDailySell method in CustomerServiceImpl with {} {}", year, month);
+		try {
+			Map<String, Object> map = new HashMap<>();
+			String sMonth = String.valueOf(month);
+			double monthlyTotal = 0.0;
+			if (month < 10)
+				sMonth = "0" + sMonth;
+			List<Map<String, Object>> monthlyReport = new ArrayList<>();
+			YearMonth yearMonthObject = YearMonth.of(year, month);
+			int daysInMonth = yearMonthObject.lengthOfMonth();
+			for (int i = 1; i <= daysInMonth; i++) {
+				String day = String.valueOf(i);
+				if ( i < 10)
+					day = "0" + i;
+				LocalDate date = LocalDate.parse(String.valueOf(year) + "-" + sMonth + "-" + day);
+				Map<String, Object> dailyReport = getDailySell(date);
+				Map<String, Object> dailyData = new HashMap<>();
+				dailyData.put("dailyReport", dailyReport);
+				dailyData.put("day", getDailyTimeMili(date));
+				if (null != dailyReport) {
+					dailyData.put("dailyTotal", dailyReport.get("total"));
+					monthlyTotal += (double)dailyReport.get("total");
+				} else {
+					dailyData.put("dailyTotal", 0.0);
+				}
+				monthlyReport.add(dailyData);
+			}
+			map.put("monthlyTotal", monthlyTotal);
+			map.put("monthlyReport", monthlyReport);
+			return map;
+		} catch (BaseException e){
+			throw e;
+		} catch (Exception e){
+			throw new BaseException(e.getMessage(), AllGolbalConstants.SERVICE_LAYER, null);
+		}
+	}
+
+	@Override
+	public Map<Integer, Object> getItemWiseDailySell(LocalDate date) throws BaseException {
+		LOGGER.trace("Entering into getItemWiseDailySell method in CustomerServiceImpl with {}", date);
+		List<Item> items = itemRepository.getAllItem();
+		Map<Integer, Object> itemMap = new HashMap<>();
+		for ( Item item : items) {
+			Map<String, Object> tempMap = new HashMap<>();
+			tempMap.put("quantity", 0);
+			tempMap.put("totalSellPrice", 0.0);
+			tempMap.put("itemName", item.getItemName());
+			tempMap.put("price", item.getPrice());
+			itemMap.put(item.getItemId(), tempMap);
+		}
+		List<Order> orders = getDailyOrders(date);
+		for (Order order : orders) {
+			for (OrderItem item : order.getOrderDetails().getItems()) {
+				Map<String, Object> tempMapNew = (Map<String, Object>) itemMap.get(item.getItemId());
+				if (null != tempMapNew){
+					int quantity = (int)tempMapNew.get("quantity") + item.getQuantity();
+					tempMapNew.put("quantity", quantity);
+					Double totalSellPrice = Double.valueOf(String.valueOf(tempMapNew.get("totalSellPrice"))) + (Double.valueOf(String.valueOf(tempMapNew.get("price"))) * item.getQuantity());
+					tempMapNew.put("totalSellPrice", totalSellPrice);
+				}
+			}
+		}
+		return itemMap;
 	}
 
 	@Override

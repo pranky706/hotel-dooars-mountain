@@ -3,6 +3,8 @@
  */
 package com.dooars.mountain.model.item;
 
+import com.google.common.base.MoreObjects;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 
@@ -25,6 +27,7 @@ public class Item implements Serializable{
 	private int groupId;
 	private String isAvailable;
 	private String imageName;
+	private int categoryId;
 	
 	
 	
@@ -89,42 +92,29 @@ public class Item implements Serializable{
 	public void setDescription(String description) {
 		this.description = description;
 	}
+
+	public int getCategoryId() {
+		return categoryId;
+	}
+
+	public void setCategoryId(int categoryId) {
+		this.categoryId = categoryId;
+	}
+
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("Item [itemId=");
-		builder.append(itemId);
-		builder.append(", itemName=");
-		builder.append(itemName);
-		builder.append(", description=");
-		builder.append(description);
-		builder.append(", offer=");
-		builder.append(offer);
-		builder.append(", offerFrom=");
-		builder.append(offerFrom);
-		builder.append(", offerUpto=");
-		builder.append(offerUpto);
-		builder.append(", price=");
-		builder.append(price);
-		builder.append(", groupId=");
-		builder.append(groupId);
-		builder.append(", isAvailable=");
-		builder.append(isAvailable);
-		builder.append(", imageName=");
-		builder.append(imageName);
-		builder.append("]");
-		return builder.toString();
+		return MoreObjects.toStringHelper(this)
+				.add("itemId", itemId)
+				.add("itemName", itemName)
+				.add("description", description)
+				.add("offer", offer)
+				.add("offerFrom", offerFrom)
+				.add("offerUpto", offerUpto)
+				.add("price", price)
+				.add("groupId", groupId)
+				.add("isAvailable", isAvailable)
+				.add("imageName", imageName)
+				.add("categoryId", categoryId)
+				.toString();
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
 }

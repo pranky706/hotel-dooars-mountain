@@ -3,9 +3,13 @@
  */
 package com.dooars.mountain.web.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.dooars.mountain.constants.AllEndPoints;
+import com.dooars.mountain.constants.AllGolbalConstants;
+import com.dooars.mountain.model.item.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -147,6 +151,91 @@ public class ItemController {
 				return new ResponseEntity<T>(HttpStatus.NOT_FOUND);
 			}
 			
+		} catch (BaseException e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
+
+	@PostMapping(AllEndPoints.ADD_CATEGORY)
+	public <T> ResponseEntity<T> addCategory(@RequestBody Category category) {
+		LOGGER.trace("Entering into addCategory method in ItemController with {}" , category.toString());
+		try {
+			if (null == category)
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			if (null == category.getCategoryName() || "".equals(category.getCategoryName()))
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			if (null == category.getCategoryImageName() || "".equals(category.getCategoryImageName()))
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+			Category category1 = service.addCategory(category);
+			return new ResponseEntity<T>((T) category1, HttpStatus.OK);
+
+		} catch (BaseException e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
+
+	@PostMapping(AllEndPoints.UPDATE_CATEGORY)
+	public <T> ResponseEntity<T> updateCategory(@RequestBody Category category) {
+		LOGGER.trace("Entering into updateCategory method in ItemController with {}" , category.toString());
+		try {
+			if (null == category)
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			if (null == category.getCategoryName() || "".equals(category.getCategoryName()))
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			if (null == category.getCategoryImageName() || "".equals(category.getCategoryImageName()))
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			if (0 == category.getCategoryId())
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			service.updateCategory(category);
+			return new ResponseEntity<T>(HttpStatus.OK);
+
+		} catch (BaseException e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
+
+	@PostMapping("/api/item-service/getItemsByCategoryId")
+	public <T> ResponseEntity<T> getItemsByCategoryId(@RequestParam("categoryId") int categoryId) {
+		LOGGER.trace("Entering into getItemsByGroupId method in ItemController with{}", categoryId);
+		try {
+			List<Item> items = service.getItemByCategoryId(categoryId);
+			if ( null != items && items.size() > 0) {
+				return new ResponseEntity<T>((T) items, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<T>(HttpStatus.NOT_FOUND);
+			}
+
+		} catch (BaseException e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
+
+	@PostMapping("/api/item-service/getAllCategory")
+	public <T> ResponseEntity<T> getAllCategory() {
+		LOGGER.trace("Entering into getAllCategory method in ItemController with");
+		try {
+			List<Category> categories = service.getAllCategory();
+			if ( null != categories && categories.size() > 0) {
+				Map<String, Object> map = new HashMap<>();
+				map.put("bucketUrl", AllGolbalConstants.BUCKET_URL);
+				map.put("categories", categories);
+				return new ResponseEntity<T>((T) map, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<T>(HttpStatus.NOT_FOUND);
+			}
+
+		} catch (BaseException e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
+
+	@PostMapping(AllEndPoints.DELETE_CATEGORY)
+	public <T> ResponseEntity<T> deleteCategory(@RequestParam("categoryId") int categoryId) {
+		LOGGER.trace("Entering into deleteCategory method in ItemController with{}", categoryId);
+		try {
+			service.deleteCategory(categoryId);
+			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (BaseException e) {
 			return helper.constructErrorResponse(e);
 		}

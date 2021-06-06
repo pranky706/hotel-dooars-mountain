@@ -4,6 +4,7 @@
 package com.dooars.mountain.service.customer;
 
 import java.security.SignatureException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -47,4 +48,7 @@ public interface CustomerService {
 	Order addDeliveryBoyToOrder(DeliveryBoy deliveryBoy, long  orderId) throws BaseException, JsonProcessingException;
 	long getOrderCount(CurrentStatus currentStatus) throws BaseException;
 	void removePushToken(long mobileNumber, Platform platform) throws BaseException, JsonProcessingException;
+	Map<String, Object> getDailySell(LocalDate date) throws BaseException;
+	Map<String, Object> getMonthlySell(int year, int month) throws BaseException;
+	Map<Integer, Object> getItemWiseDailySell(LocalDate date) throws BaseException;
 }

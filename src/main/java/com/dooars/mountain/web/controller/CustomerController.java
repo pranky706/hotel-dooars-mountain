@@ -30,6 +30,7 @@ import com.dooars.mountain.service.customer.CustomerService;
 import com.dooars.mountain.constants.CustomerConstants;
 
 import java.security.SignatureException;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -364,6 +365,59 @@ public class CustomerController {
 			Map<String, Object> map = new HashMap<>();
 			map.put("deliveryCharge", charge);
 			return new ResponseEntity<T>((T) map, HttpStatus.OK);
+		} catch (Exception e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
+
+	@PostMapping(CustomerConstants.GET_DAILY_SELL_URL)
+	public <T> ResponseEntity<T> getDailySell(@RequestBody Map<String, LocalDate> mapBody) {
+		LOGGER.trace("Entering into getDailySell method in CustomerController with {}", mapBody);
+		try {
+			if (!mapBody.containsKey("date"))
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			Map<String, Object> map = service.getDailySell(mapBody.get("date"));
+			if ( null != map)
+				return new ResponseEntity<T>((T) map, HttpStatus.OK);
+			else
+				return new ResponseEntity<T>(HttpStatus.NOT_FOUND);
+		} catch (Exception e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
+
+	@PostMapping(CustomerConstants.GET_ITEM_WISE_DAILY_SELL_URL)
+	public <T> ResponseEntity<T> getItemWiseDailySell(@RequestBody Map<String, LocalDate> mapBody) {
+		LOGGER.trace("Entering into getItemWiseDailySell method in CustomerController with {}", mapBody);
+		try {
+			if (!mapBody.containsKey("date"))
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			Map<Integer, Object> map = service.getItemWiseDailySell(mapBody.get("date"));
+			if ( null != map)
+				return new ResponseEntity<T>((T) map, HttpStatus.OK);
+			else
+				return new ResponseEntity<T>(HttpStatus.NOT_FOUND);
+		} catch (Exception e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
+
+
+	@PostMapping(CustomerConstants.GET_MONTHLY_SELL_URL)
+	public <T> ResponseEntity<T> getMonthlySell(@RequestBody Map<String, Integer> mapBody) {
+		LOGGER.trace("Entering into getMonthlySell method in CustomerController with {}", mapBody);
+		try {
+			if (!mapBody.containsKey("year") || !mapBody.containsKey("month"))
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			int year = mapBody.get("year");
+			int month = mapBody.get("month");
+			if (0 == year || 0 == month || month < 0 || month >12)
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			Map<String, Object> map = service.getMonthlySell(year, month);
+			if ( null != map)
+				return new ResponseEntity<T>((T) map, HttpStatus.OK);
+			else
+				return new ResponseEntity<T>(HttpStatus.NOT_FOUND);
 		} catch (Exception e) {
 			return helper.constructErrorResponse(e);
 		}

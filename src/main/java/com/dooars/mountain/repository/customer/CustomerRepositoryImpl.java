@@ -92,6 +92,8 @@ public class CustomerRepositoryImpl implements CustomerRepository{
 
 	private final String GET_ORDER_COUNT_NOT_COMPLETED = "select count(*) from orders where orders.orders->>'currentStatus' !=:currentStatus";
 
+	private final String GET_DAILY_ORDER = "select orders as orders from orders where (orders.orders->>'createdAt')::bigint >= :start and (orders.orders->>'createdAt')::bigint <= :end";
+
 	private final RowMapper<Customer> mapper = new RowMapper<Customer>() {
 		
 		@Override
@@ -339,6 +341,16 @@ public class CustomerRepositoryImpl implements CustomerRepository{
 		namedParameters.addValue("mobileNumber", mobileNumber);
 		namedParameters.addValue("isdelete", AllGolbalConstants.FALSE);
 		return Try.ofSupplier(() -> DataAccessUtils.singleResult(jdbcTemplate.query(GET_TOKEN, namedParameters, tokenMapper)))
+				.getOrElseThrow(throwable -> new BaseException(throwable.getMessage(), AllGolbalConstants.REPO_LAYER, null));
+	}
+
+	@Override
+	public List<Order> getDailyOrders(long start, long end) throws BaseException {
+		LOGGER.trace("Entering into getDailyOrders method in CustomerRepositoryImpl with {} {}", start, end);
+		MapSqlParameterSource namedParameters = new MapSqlParameterSource();
+		namedParameters.addValue("start", start);
+		namedParameters.addValue("end", end);
+		return Try.ofSupplier(() -> jdbcTemplate.query(GET_DAILY_ORDER, namedParameters, orderMapper))
 				.getOrElseThrow(throwable -> new BaseException(throwable.getMessage(), AllGolbalConstants.REPO_LAYER, null));
 	}
 

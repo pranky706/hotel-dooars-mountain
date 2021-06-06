@@ -12,6 +12,9 @@ public class CustomerConstants {
 	public static final String ADD_CUSTOMER_URL = "/customer-service/addCustomer";
 	public static final String SIGN_OUT_URL = "/api/customer-service/signOut";
 	public static final String GET_DELIVERY_CHARGE_URL = "/api/customer-service/getDeliveryCharge";
+	public static final String GET_DAILY_SELL_URL = "/api/admin/customer-service/getDailySell";
+	public static final String GET_ITEM_WISE_DAILY_SELL_URL = "/api/admin/customer-service/getItemWiseDailySell";
+	public static final String GET_MONTHLY_SELL_URL = "/api/admin/customer-service/getMonthlySell";
 	public static final String GET_CUSTOMER_URL = "/api/customer-service/getCustomer";
 	public static final String ADD_LOCATION_URL = "/api/customer-service/addLocation";
 	public static final String GET_LOCATION_URL = "/api/customer-service/getLocation";

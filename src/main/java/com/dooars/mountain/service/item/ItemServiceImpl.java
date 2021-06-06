@@ -8,17 +8,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.dooars.mountain.model.item.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.dooars.mountain.model.common.BaseException;
-import com.dooars.mountain.model.item.GroupValue;
-import com.dooars.mountain.model.item.Item;
-import com.dooars.mountain.model.item.Menu;
-import com.dooars.mountain.model.item.MenuPair;
-import com.dooars.mountain.model.item.Offer;
 import com.dooars.mountain.model.menugroup.MenuGroup;
 import com.dooars.mountain.repository.item.ItemRepository;
 import com.dooars.mountain.repository.menugroup.MenuGroupRepository;
@@ -127,7 +123,37 @@ public class ItemServiceImpl implements ItemService {
 		menu.setGroupValues(groupValues);
 		return menu;
 	}
-	
-	
+
+	@Override
+	public Category addCategory(Category category) throws BaseException {
+		LOGGER.trace("Entering into addCategory method in ItemServiceImpl with {}", category.toString());
+		return itemRepo.addCategory(category);
+	}
+
+	@Override
+	public List<Item> getItemByCategoryId(int categoryId) throws BaseException {
+		LOGGER.trace("Entering into addCategory method in ItemServiceImpl with {}", categoryId);
+		return itemRepo.getItemByCategoryId(categoryId);
+	}
+
+	@Override
+	public void deleteCategory(int categoryId) throws BaseException {
+		LOGGER.trace("Entering into deleteCategory method in ItemServiceImpl with {}", categoryId);
+		itemRepo.deleteCategory(categoryId);
+		itemRepo.deleteItemByCategory(categoryId);
+	}
+
+	@Override
+	public void updateCategory(Category category) throws BaseException {
+		LOGGER.trace("Entering into updateCategory method in ItemServiceImpl with {}", category.toString());
+		itemRepo.updateCategory(category);
+	}
+
+	@Override
+	public List<Category> getAllCategory() throws BaseException {
+		LOGGER.trace("Entering into getAllCategory method in ItemServiceImpl with ");
+		return itemRepo.getAllCategory();
+	}
+
 
 }

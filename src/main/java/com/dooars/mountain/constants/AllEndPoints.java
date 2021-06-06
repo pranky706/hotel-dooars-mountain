@@ -18,6 +18,9 @@ public class AllEndPoints {
     public static final String UPDATE_OFFER_ITEM = ITEM_SERVICE + "updateOffer";
     public static final String UPDATE_ITEM = ITEM_SERVICE + "updateItem";
     public static final String DELETE_ITEM = ITEM_SERVICE + "deleteItem";
+    public static final String ADD_CATEGORY = ITEM_SERVICE + "addCategory";
+    public static final String UPDATE_CATEGORY = ITEM_SERVICE + "updateCategory";
+    public static final String DELETE_CATEGORY = ITEM_SERVICE + "deleteCategory";
     public static final String MENU_GROUP_SERVICE = "/api/admin/menu-group-service/";
     public static final String ADD_MENU_GROUP = MENU_GROUP_SERVICE + "addMenuGroup";
     public static final String DELETE_MENU_GROUP = MENU_GROUP_SERVICE + "deleteMenuGroup";
