@@ -392,9 +392,9 @@ public class CustomerController {
 		try {
 			if (!mapBody.containsKey("date"))
 				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-			Map<Integer, Object> map = service.getItemWiseDailySell(mapBody.get("date"));
-			if ( null != map)
-				return new ResponseEntity<T>((T) map, HttpStatus.OK);
+			List<Map<String, Object>> list = service.getItemWiseDailySell(mapBody.get("date"));
+			if ( null != list && list.size() > 0)
+				return new ResponseEntity<T>((T) list, HttpStatus.OK);
 			else
 				return new ResponseEntity<T>(HttpStatus.NOT_FOUND);
 		} catch (Exception e) {

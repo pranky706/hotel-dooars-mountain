@@ -50,5 +50,5 @@ public interface CustomerService {
 	void removePushToken(long mobileNumber, Platform platform) throws BaseException, JsonProcessingException;
 	Map<String, Object> getDailySell(LocalDate date) throws BaseException;
 	Map<String, Object> getMonthlySell(int year, int month) throws BaseException;
-	Map<Integer, Object> getItemWiseDailySell(LocalDate date) throws BaseException;
+	List<Map<String, Object>> getItemWiseDailySell(LocalDate date) throws BaseException;
 }

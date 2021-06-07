@@ -457,7 +457,7 @@ public class CustomerServiceImpl implements CustomerService{
 	}
 
 	@Override
-	public Map<Integer, Object> getItemWiseDailySell(LocalDate date) throws BaseException {
+	public List<Map<String, Object>> getItemWiseDailySell(LocalDate date) throws BaseException {
 		LOGGER.trace("Entering into getItemWiseDailySell method in CustomerServiceImpl with {}", date);
 		List<Item> items = itemRepository.getAllItem();
 		Map<Integer, Object> itemMap = new HashMap<>();
@@ -467,6 +467,7 @@ public class CustomerServiceImpl implements CustomerService{
 			tempMap.put("totalSellPrice", 0.0);
 			tempMap.put("itemName", item.getItemName());
 			tempMap.put("price", item.getPrice());
+			tempMap.put("itemId", item.getItemId());
 			itemMap.put(item.getItemId(), tempMap);
 		}
 		List<Order> orders = getDailyOrders(date);
@@ -481,7 +482,11 @@ public class CustomerServiceImpl implements CustomerService{
 				}
 			}
 		}
-		return itemMap;
+		List<Map<String, Object>> list = new ArrayList<>();
+		for (Map.Entry<Integer, Object> entry : itemMap.entrySet()) {
+			list.add((Map<String, Object>) entry.getValue());
+		}
+		return list;
 	}
 
 	@Override
