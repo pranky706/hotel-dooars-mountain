@@ -23,6 +23,7 @@ public class CustomerConstants {
 	public static final String UPDATE_ORDER_STATUS = "/api/admin/customer-service/updateOrderStatus";
 	public static final String ADD_DELIVERY_BOY_TO_ORDER_URL = "/api/admin/customer-service/addDeliveryBoyToOrder";
 	public static final String GET_ORDER_URL = "/api/customer-service/getOrders";
+	public static final String GET_ORDER_BY_ORDER_ID_URL = "/api/customer-service/getOrderByOrderId";
 	public static final String PLACE_ORDER_URL = "/api/customer-service/placeOrder";
 	public static final String ADD_PUSH_TOKEN_URL = "/api/customer-service/addPushToken";
 	public static final String GET_PUSH_TOKEN_URL = "/api/customer-service/getPushToken";

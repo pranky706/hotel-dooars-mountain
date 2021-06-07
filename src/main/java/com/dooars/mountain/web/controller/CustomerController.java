@@ -198,6 +198,22 @@ public class CustomerController {
 		}
 	}
 
+	@PostMapping(CustomerConstants.GET_ORDER_BY_ORDER_ID_URL)
+	public <T> ResponseEntity<T> getOrderByOrderId(@RequestParam("orderId") long orderId) {
+		LOGGER.trace("Entering into getOrderByOrderId method in CustomerController with {}", orderId);
+		try {
+			Order order = service.getOrderByOrderId(orderId);
+			if ( null != order) {
+				return new ResponseEntity<T>((T) order, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<T>( HttpStatus.NOT_FOUND);
+			}
+
+		} catch (BaseException e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
+
 	@PostMapping(AllEndPoints.GET_ALL_ORDER_URL)
 	public <T> ResponseEntity<T> getAllOrders(@RequestParam("noOfObjects") int noOfObjects,@RequestParam("currentPage") int currentPage) {
 		LOGGER.trace("Entering into getAllOrders method in CustomerController with");

@@ -283,10 +283,18 @@ public class CustomerServiceImpl implements CustomerService{
 		map.put("collapse_key", "type_a");
 		Map<String, Object> notificationMap = new HashMap<>();
 		notificationMap.put("title", "Notification from Hotel Dooars Mountain");
-		notificationMap.put("body", "Your order status is " + status + ".");
+		if (status.equals(CurrentStatus.ACCEPTED))
+			notificationMap.put("body", "Your order is accepted. It is in kitchen now. Please wait for few minutes.");
+		else if (status.equals(CurrentStatus.OUT_FOR_DELIVERY))
+			notificationMap.put("body", "Your delicious food is on the way. Please find the contact details of the delivery person in the app.");
+		else if (status.equals(CurrentStatus.DELIVERED))
+			notificationMap.put("body", "We are very happy to serve you. We are waiting to meet you again very soon.");
+		else
+			notificationMap.put("body", "Your current order status is " + status + ".");
 		map.put("notification", notificationMap);
 		Map<String, Object> dataMap = new HashMap<>();
-		dataMap.put("order", order);
+		dataMap.put("type", "ORDER_STATUS_CHANGE");
+		dataMap.put("data", order.getOrderId());
 		map.put("data", dataMap);
 		return map;
 	}
@@ -533,6 +541,11 @@ public class CustomerServiceImpl implements CustomerService{
 		Order order = customerRepo.getOrderByIdAndNumber(mobileNumber, orderId);
 		customerRepo.deleteOrder(orderId, mobileNumber);
 		return order;
+	}
+	@Override
+	public Order getOrderByOrderId(long orderId) throws BaseException {
+		LOGGER.trace("Entering into getOrderByOrderId method in CustomerServiceImpl with {}", orderId);
+		return customerRepo.getOrderById(orderId);
 	}
 
 }

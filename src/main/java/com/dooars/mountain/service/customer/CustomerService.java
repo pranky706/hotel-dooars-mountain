@@ -36,6 +36,7 @@ public interface CustomerService {
 	Order addOrder(Order order, long mobileNumber) throws BaseException, JsonProcessingException;
 	boolean verifySign(Order order, long mobileNumber) throws BaseException, SignatureException;
 	double getDeliveryCharge(double lat, double lon);
+	Order getOrderByOrderId(long orderId) throws BaseException;
 	List<Order> getOrders(long mobileNumber) throws BaseException;
 	List<Order> getAllOrders(int noOfObjects, int currentPage) throws BaseException;
 	List<Order> getAllOrdersNotCompleted(int noOfObjects, int currentPage) throws BaseException;
