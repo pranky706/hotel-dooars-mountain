@@ -10,6 +10,7 @@ import com.dooars.mountain.model.customer.CustomerToken;
 import com.dooars.mountain.model.customer.Location;
 import com.dooars.mountain.model.customer.Platform;
 import com.dooars.mountain.model.deliveryboy.DeliveryBoy;
+import com.dooars.mountain.model.operation.OperationTime;
 import com.dooars.mountain.model.order.CurrentStatus;
 import com.dooars.mountain.model.order.Order;
 import com.dooars.mountain.web.commands.order.UpdateOrderStatus;
@@ -438,4 +439,69 @@ public class CustomerController {
 			return helper.constructErrorResponse(e);
 		}
 	}
+
+	@PostMapping(CustomerConstants.GET_ITEM_WISE_MONTHLY_SELL_URL)
+	public <T> ResponseEntity<T> getItemWiseMonthlySell(@RequestBody Map<String, Integer> mapBody) {
+		LOGGER.trace("Entering into getItemWiseMonthlySell method in CustomerController with {}", mapBody);
+		try {
+			if (!mapBody.containsKey("year") || !mapBody.containsKey("month"))
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			int year = mapBody.get("year");
+			int month = mapBody.get("month");
+			if (0 == year || 0 == month || month < 0 || month >12)
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			List<Map<String, Object>> list = service.getItemWiseMonthlySell(year, month);
+			if ( null != list && list.size() > 0)
+				return new ResponseEntity<T>((T) list, HttpStatus.OK);
+			else
+				return new ResponseEntity<T>(HttpStatus.NOT_FOUND);
+		} catch (Exception e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
+
+	@PostMapping(CustomerConstants.SEND_PROMOTION_URL)
+	public <T> ResponseEntity<T> sendPromotion(@RequestBody Map<String, String> mapBody) {
+		LOGGER.trace("Entering into sendPromotion method in CustomerController with {}", mapBody);
+		try {
+			if (!mapBody.containsKey("title"))
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			if (!mapBody.containsKey("body"))
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			service.sendPromotion(mapBody.get("title"), mapBody.get("body"));
+			return new ResponseEntity<T>(HttpStatus.OK);
+		} catch (Exception e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
+
+	@PostMapping(CustomerConstants.UPDATE_OPERATION_TIME_URL)
+	public <T> ResponseEntity<T> updateTime(@RequestBody List<OperationTime> operationTimes) {
+		LOGGER.trace("Entering into sendPromotion method in CustomerController with {}", operationTimes);
+		try {
+			if (7 != operationTimes.size())
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+			service.updateOperationTime(operationTimes);
+			return new ResponseEntity<T>(HttpStatus.OK);
+		} catch (Exception e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
+
+	@PostMapping(CustomerConstants.GET_OPERATION_TIME_URL)
+	public <T> ResponseEntity<T> getTime() {
+		LOGGER.trace("Entering into getItemWiseDailySell method in CustomerController with");
+		try {
+			List<OperationTime> operationTimes = service.getOperationTimes();
+			if ( null != operationTimes && operationTimes.size() > 0)
+				return new ResponseEntity<T>((T) operationTimes, HttpStatus.OK);
+			else
+				return new ResponseEntity<T>(HttpStatus.NOT_FOUND);
+		} catch (Exception e) {
+			return helper.constructErrorResponse(e);
+		}
+	}
+
+
 }

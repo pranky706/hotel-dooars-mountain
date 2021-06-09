@@ -28,6 +28,7 @@ public class Item implements Serializable{
 	private String isAvailable;
 	private String imageName;
 	private int categoryId;
+	private float packagingCharge;
 	
 	
 	
@@ -101,6 +102,14 @@ public class Item implements Serializable{
 		this.categoryId = categoryId;
 	}
 
+	public float getPackagingCharge() {
+		return packagingCharge;
+	}
+
+	public void setPackagingCharge(float packagingCharge) {
+		this.packagingCharge = packagingCharge;
+	}
+
 	@Override
 	public String toString() {
 		return MoreObjects.toStringHelper(this)
@@ -115,6 +124,7 @@ public class Item implements Serializable{
 				.add("isAvailable", isAvailable)
 				.add("imageName", imageName)
 				.add("categoryId", categoryId)
+				.add("packagingCharge", packagingCharge)
 				.toString();
 	}
 }

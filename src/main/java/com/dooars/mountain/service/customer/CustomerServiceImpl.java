@@ -8,23 +8,26 @@ import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.dooars.mountain.constants.FireBaseConstants;
 import com.dooars.mountain.model.customer.CustomerToken;
 import com.dooars.mountain.model.customer.Location;
 import com.dooars.mountain.model.customer.Platform;
 import com.dooars.mountain.model.deliveryboy.DeliveryBoy;
 import com.dooars.mountain.model.item.Item;
+import com.dooars.mountain.model.operation.OperationTime;
 import com.dooars.mountain.model.order.*;
 import com.dooars.mountain.repository.item.ItemRepository;
+import com.dooars.mountain.repository.operation.OparetionTimeRepository;
+import com.dooars.mountain.service.firebase.FireBaseService;
+import com.dooars.mountain.service.print.PrintService;
+import com.dooars.mountain.service.s3.AWSS3Service;
 import com.dooars.mountain.web.commands.token.AddPushTokenCommand;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.firebase.messaging.BatchResponse;
+import com.google.firebase.messaging.MulticastMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Service;
@@ -61,15 +64,28 @@ public class CustomerServiceImpl implements CustomerService{
 
 	private final ItemRepository itemRepository;
 
+	private final AWSS3Service awss3Service;
+
+	private final PrintService printService;
+
+	private final OparetionTimeRepository oparetionTimeRepository;
+
+	private final FireBaseService fireBaseService;
+
 	private static final String HMAC_SHA256_ALGORITHM = "HmacSHA256";
 	
 	@Autowired
 	CustomerServiceImpl(CustomerRepository customerRepo, ObjectMapper objectMapper, RestTemplate restTemplate,
-						ItemRepository itemRepository) {
+						ItemRepository itemRepository, AWSS3Service awss3Service, PrintService printService,
+						OparetionTimeRepository oparetionTimeRepository, FireBaseService fireBaseService) {
 		this.customerRepo = customerRepo;
 		this.objectMapper = objectMapper;
 		this.restTemplate = restTemplate;
 		this.itemRepository = itemRepository;
+		this.awss3Service = awss3Service;
+		this.printService = printService;
+		this.oparetionTimeRepository = oparetionTimeRepository;
+		this.fireBaseService = fireBaseService;
 	}
 
 	@Override
@@ -262,41 +278,72 @@ public class CustomerServiceImpl implements CustomerService{
 			order.setLastUpdatedAt(currentMiliSec);
 			customerRepo.updateOrder(objectMapper.writeValueAsString(order),mobileNumber,orderId);
 			List<CustomerToken> customerTokens = customerRepo.getCustomerTokens(mobileNumber);
+			List<String> tokens = new ArrayList<>();
 			for (CustomerToken ct : customerTokens) {
-				for (String token : ct.getPushTokens()) {
-					Map<String, Object> request = makeRequestForPushNotification(token, currentStatus.toString(), order);
-					HttpHeaders headers = new HttpHeaders();
-					headers.add("Authorization", FireBaseConstants.KEY);
-					HttpEntity<Map> entity = new HttpEntity<Map>(request,headers);
-					String response = restTemplate.exchange(
-							FireBaseConstants.URL, HttpMethod.POST, entity, String.class).getBody();
-					LOGGER.trace(" Response from firebase {}", response);
-				}
+				tokens.addAll(ct.getPushTokens());
 			}
+			LOGGER.trace("Token size {}", tokens.size());
+			BatchResponse batchResponse = fireBaseService.sendNotification(makeRequestForPushNotification(tokens, currentStatus.toString(), order));
+			LOGGER.trace("Sending Promotion response {}", batchResponse.getResponses().size());
+			if (currentStatus.equals(CurrentStatus.OUT_FOR_DELIVERY)) {
+				awss3Service.deleteFile(orderId + "_kot.pdf");
+				awss3Service.deleteFile(orderId + "_bill.pdf");
+			}
+			if (currentStatus.equals(CurrentStatus.ACCEPTED))
+				printService.createKOT(orderId);
+			if (currentStatus.equals(CurrentStatus.READY_FOR_DELIVERY))
+				printService.createBill(orderId);
 		}
 		return order;
 	}
 
-	private Map<String, Object> makeRequestForPushNotification(String token, String status, Order order) {
-		Map<String, Object> map = new HashMap<>();
-		map.put("to", token);
-		map.put("collapse_key", "type_a");
-		Map<String, Object> notificationMap = new HashMap<>();
-		notificationMap.put("title", "Notification from Hotel Dooars Mountain");
-		if (status.equals(CurrentStatus.ACCEPTED))
-			notificationMap.put("body", "Your order is accepted. It is in kitchen now. Please wait for few minutes.");
-		else if (status.equals(CurrentStatus.OUT_FOR_DELIVERY))
-			notificationMap.put("body", "Your delicious food is on the way. Please find the contact details of the delivery person in the app.");
-		else if (status.equals(CurrentStatus.DELIVERED))
-			notificationMap.put("body", "We are very happy to serve you. We are waiting to meet you again very soon.");
+	private MulticastMessage makeRequestForPushNotification(List<String> tokens, String status, Order order) {
+		String title = "Notification from Hotel Dooars Mountain";
+		String body = "";
+		if (status.equals(CurrentStatus.ACCEPTED.toString()))
+			body = "Your order is accepted. Please wait for few minutes.";
+		else if (status.equals(CurrentStatus.IN_KITCHEN.toString()))
+			body = "Your food is in kitchen now. We are preparing it.";
+		else if (status.equals(CurrentStatus.OUT_FOR_DELIVERY.toString()))
+			body = "Your delicious food is on the way. Please find the contact details of the delivery person in the app.";
+		else if (status.equals(CurrentStatus.DELIVERED.toString()))
+			body =  "We are very happy to serve you. We are waiting to meet you again very soon.";
 		else
-			notificationMap.put("body", "Your current order status is " + status + ".");
-		map.put("notification", notificationMap);
-		Map<String, Object> dataMap = new HashMap<>();
+			body = "Your current order status is " + status + ".";
+		Map<String, String> dataMap = new HashMap<>();
 		dataMap.put("type", "ORDER_STATUS_CHANGE");
-		dataMap.put("data", order.getOrderId());
-		map.put("data", dataMap);
-		return map;
+		dataMap.put("data", String.valueOf(order.getOrderId()));
+		return fireBaseService.createMsg(tokens, title, body, dataMap);
+	}
+
+	@Override
+	public void sendPromotion(String title, String body) throws BaseException {
+		LOGGER.trace("Entering into sendPromotion method in CustomerServiceImpl with {} {}", title, body);
+		List<List<CustomerToken>> customerTokens = customerRepo.getCustomerTokensNotAdmin();
+		List<String> tokens = new ArrayList<>();
+		for (List<CustomerToken> customerTokenList : customerTokens) {
+			for ( CustomerToken customerToken : customerTokenList) {
+				tokens.addAll(customerToken.getPushTokens());
+			}
+		}
+		LOGGER.trace("Token size {}", tokens.size());
+		BatchResponse batchResponse = fireBaseService.sendPromotion(tokens, title, body);
+		LOGGER.trace("Sending Promotion response {}", batchResponse.getResponses().size());
+
+	}
+
+	@Override
+	public void updateOperationTime(List<OperationTime> operationTimes) throws BaseException {
+		LOGGER.trace("Entering into updateOperationTime method in CustomerServiceImpl with {}", operationTimes);
+		for (OperationTime operationTime : operationTimes) {
+			oparetionTimeRepository.updateOperationTime(operationTime);
+		}
+	}
+
+	@Override
+	public List<OperationTime> getOperationTimes() throws BaseException {
+		LOGGER.trace("Entering into getOperationTimes method in CustomerServiceImpl");
+		return oparetionTimeRepository.getOperationTimes();
 	}
 
 	@Override
@@ -494,8 +541,74 @@ public class CustomerServiceImpl implements CustomerService{
 		for (Map.Entry<Integer, Object> entry : itemMap.entrySet()) {
 			list.add((Map<String, Object>) entry.getValue());
 		}
+		Collections.sort(list, mapComparator);
 		return list;
 	}
+
+	private List<Order>  getMonthlyOrders(LocalDate sDate, LocalDate eDate) throws BaseException {
+		ZoneId z = ZoneId.of( "Asia/Kolkata" );
+		LocalDateTime sLDT = LocalDateTime.parse(sDate + "T00:00:00");
+		LocalDateTime eLDT = LocalDateTime.parse(eDate + "T23:59:59");
+		ZonedDateTime sZDT = ZonedDateTime.of(sLDT, z);
+		ZonedDateTime eZDT = ZonedDateTime.of(eLDT, z);
+		long start = sZDT.toInstant().toEpochMilli();
+		long end = eZDT.toInstant().toEpochMilli();
+		return customerRepo.getDailyOrders(start, end);
+	}
+
+	@Override
+	public List<Map<String, Object>> getItemWiseMonthlySell(int year, int month) throws BaseException {
+		LOGGER.trace("Entering into getItemWiseMonthlySell method in CustomerServiceImpl with {} {}", year, month);
+		try {
+			List<Item> items = itemRepository.getAllItem();
+			Map<Integer, Object> itemMap = new HashMap<>();
+			for ( Item item : items) {
+				Map<String, Object> tempMap = new HashMap<>();
+				tempMap.put("quantity", 0);
+				tempMap.put("totalSellPrice", 0.0);
+				tempMap.put("itemName", item.getItemName());
+				tempMap.put("price", item.getPrice());
+				tempMap.put("itemId", item.getItemId());
+				itemMap.put(item.getItemId(), tempMap);
+			}
+			String sMonth = String.valueOf(month);
+			if (month < 10)
+				sMonth = "0" + sMonth;
+			List<Map<String, Object>> monthlyReport = new ArrayList<>();
+			YearMonth yearMonthObject = YearMonth.of(year, month);
+			int daysInMonth = yearMonthObject.lengthOfMonth();
+			LocalDate sDate = LocalDate.parse(String.valueOf(year) + "-" + sMonth + "-" + "01");
+			LocalDate eDate = LocalDate.parse(String.valueOf(year) + "-" + sMonth + "-" + daysInMonth);
+			List<Order> orders = getMonthlyOrders(sDate, eDate);
+			for (Order order : orders) {
+				for (OrderItem item : order.getOrderDetails().getItems()) {
+					Map<String, Object> tempMapNew = (Map<String, Object>) itemMap.get(item.getItemId());
+					if (null != tempMapNew){
+						int quantity = (int)tempMapNew.get("quantity") + item.getQuantity();
+						tempMapNew.put("quantity", quantity);
+						Double totalSellPrice = Double.valueOf(String.valueOf(tempMapNew.get("totalSellPrice"))) + (Double.valueOf(String.valueOf(tempMapNew.get("price"))) * item.getQuantity());
+						tempMapNew.put("totalSellPrice", totalSellPrice);
+					}
+				}
+			}
+			List<Map<String, Object>> list = new ArrayList<>();
+			for (Map.Entry<Integer, Object> entry : itemMap.entrySet()) {
+				list.add((Map<String, Object>) entry.getValue());
+			}
+			Collections.sort(list, mapComparator);
+			return list;
+		}catch (BaseException e){
+			throw e;
+		} catch (Exception e){
+			throw new BaseException(e.getMessage(), AllGolbalConstants.SERVICE_LAYER, null);
+		}
+	}
+
+	public Comparator<Map<String, Object>> mapComparator = new Comparator<Map<String, Object>>() {
+		public int compare(Map<String, Object> m1, Map<String, Object> m2) {
+			return String.valueOf(m2.get("quantity")).compareTo(String.valueOf(m1.get("quantity")));
+		}
+	};
 
 	@Override
 	public List<Location> getLocations(long mobileNumber) throws BaseException {

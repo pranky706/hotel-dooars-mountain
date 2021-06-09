@@ -51,6 +51,8 @@ public class CustomerRepositoryImpl implements CustomerRepository{
 	
 	private final String GET_CUSTOMER = "select * from customer where mobileNumber = :mobileNumber and isdelete = :isdelete";
 
+	private final String GET_CUSTOMER_NOT_ADMIN = "select * from customer where isAdmin = :isAdmin and isdelete = :isdelete";
+
 	private final String GET_LOCATION = "select location as location from location where mobileNumber = :mobileNumber and isdelete = :isdelete";
 	
 	private final String DELETE_CUSTOMER = "UPDATE customer set isdelete = :isdelete where mobileNumber = :mobileNumber";
@@ -78,7 +80,7 @@ public class CustomerRepositoryImpl implements CustomerRepository{
 
 	private final String GET_ALL_ORDER = "select orders as orders from orders LIMIT :noOfObjects OFFSET :offset";
 
-	private final String GET_ALL_NOT_COMPLETED_ORDER = "select orders as orders from orders where orders.orders->>'currentStatus' != :currentStatus LIMIT :noOfObjects OFFSET :offset";
+	private final String GET_ALL_NOT_COMPLETED_ORDER = "select orders as orders from orders where orders.orders->>'currentStatus' != :currentStatus ORDER BY orders.orders->>'createdAt' DESC LIMIT :noOfObjects OFFSET :offset";
 
 	private final String GET_ALL_ORDER_BY_STATUS = "select orders as orders from orders where orders.orders->>'currentStatus' =:currentStatus LIMIT :noOfObjects OFFSET :offset";
 
@@ -194,6 +196,16 @@ public class CustomerRepositoryImpl implements CustomerRepository{
 		namedParameters.addValue("isdelete", AllGolbalConstants.FALSE);
 		return Try.ofSupplier(() -> DataAccessUtils.singleResult(jdbcTemplate.query(GET_CUSTOMER, namedParameters, mapper)))
 			.getOrElseThrow(throwable -> new BaseException(throwable.getMessage(), AllGolbalConstants.REPO_LAYER, null));
+	}
+
+	@Override
+	public List<List<CustomerToken>> getCustomerTokensNotAdmin() throws BaseException {
+		LOGGER.trace("Entering into getCustomer method in CustomerRepositoryImpl with");
+		MapSqlParameterSource namedParameters = new MapSqlParameterSource();
+		namedParameters.addValue("isAdmin", AllGolbalConstants.NO);
+		namedParameters.addValue("isdelete", AllGolbalConstants.FALSE);
+		return Try.ofSupplier(() -> jdbcTemplate.query(GET_CUSTOMER_NOT_ADMIN, namedParameters, tokenMapper))
+				.getOrElseThrow(throwable -> new BaseException(throwable.getMessage(), AllGolbalConstants.REPO_LAYER, null));
 	}
 
 	@Override

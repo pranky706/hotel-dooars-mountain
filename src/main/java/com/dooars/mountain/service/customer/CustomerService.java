@@ -14,6 +14,7 @@ import com.dooars.mountain.model.customer.CustomerToken;
 import com.dooars.mountain.model.customer.Location;
 import com.dooars.mountain.model.customer.Platform;
 import com.dooars.mountain.model.deliveryboy.DeliveryBoy;
+import com.dooars.mountain.model.operation.OperationTime;
 import com.dooars.mountain.model.order.CurrentStatus;
 import com.dooars.mountain.model.order.Order;
 import com.dooars.mountain.web.commands.token.AddPushTokenCommand;
@@ -52,4 +53,8 @@ public interface CustomerService {
 	Map<String, Object> getDailySell(LocalDate date) throws BaseException;
 	Map<String, Object> getMonthlySell(int year, int month) throws BaseException;
 	List<Map<String, Object>> getItemWiseDailySell(LocalDate date) throws BaseException;
+	List<Map<String, Object>> getItemWiseMonthlySell(int year, int month) throws BaseException;
+	void sendPromotion(String title, String body) throws BaseException;
+	void updateOperationTime(List<OperationTime> operationTimes) throws BaseException;
+	List<OperationTime> getOperationTimes() throws BaseException;
 }

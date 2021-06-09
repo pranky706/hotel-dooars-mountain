@@ -42,8 +42,8 @@ public class ItemRepositoryImpl implements ItemRepository {
 	
 	private final NamedParameterJdbcTemplate jdbcTemplate;
 	
-	private final String ADD_ITEM = "INSERT INTO items(itemName, description, imageName, offer, offerFrom, offerUpto, price, groupId, categoryId, isAvailable, isdelete)   \r\n" +
-			"VALUES (:itemName, :description, :imageName, :offer, :offerFrom, :offerUpto, :price, :groupId, :categoryId, :isAvailable, :isdelete);";
+	private final String ADD_ITEM = "INSERT INTO items(itemName, description, imageName, offer, offerFrom, offerUpto, price, groupId, categoryId, isAvailable, isdelete, packagingCharge)   \r\n" +
+			"VALUES (:itemName, :description, :imageName, :offer, :offerFrom, :offerUpto, :price, :groupId, :categoryId, :isAvailable, :isdelete, :packagingCharge);";
 	
 	private final String LAST_ID = "SELECT lastval();";
 	
@@ -57,7 +57,7 @@ public class ItemRepositoryImpl implements ItemRepository {
 	
 	private final String DELETE_ITEM_BY_GROUPID = "UPDATE items set isdelete = :isdelete where groupId = :groupId";
 	
-	private final String UPDATE_ITEM = "UPDATE items set categoryId = :categoryId, itemName = :itemName, price = :price, description = :description, offer = :offer, offerFrom = :offerFrom, offerUpto = :offerUpto, imageName=:imageName, groupId = :groupId, isAvailable = :isAvailable  where itemId = :itemId";
+	private final String UPDATE_ITEM = "UPDATE items set categoryId = :categoryId, itemName = :itemName, price = :price, description = :description, offer = :offer, offerFrom = :offerFrom, offerUpto = :offerUpto, imageName=:imageName, groupId = :groupId, isAvailable = :isAvailable, packagingCharge = :packagingCharge  where itemId = :itemId";
 	
 	private final String GET_ALL_MENU = "select items.*, menu_group.groupName  from items, menu_group"
 			+ " where items.groupId = menu_group.groupId and menu_group.isDelete = :isdelete and items.isDelete = :isdelete;";
@@ -102,6 +102,7 @@ public class ItemRepositoryImpl implements ItemRepository {
 			}
 			item.setCategoryId(rs.getInt("categoryId"));
 			item.setPrice(rs.getFloat("price"));
+			item.setPackagingCharge(rs.getFloat("packagingCharge"));
 			return item;
 		}
 	};
@@ -132,6 +133,7 @@ public class ItemRepositoryImpl implements ItemRepository {
 			}
 			item.setPrice(rs.getFloat("price"));
 			item.setCategoryId(rs.getInt("categoryId"));
+			item.setPackagingCharge(rs.getFloat("packagingCharge"));
 			menuPair.setItem(item);
 			menuPair.setGroupName(rs.getString("groupName"));
 			return menuPair;
@@ -171,6 +173,7 @@ public class ItemRepositoryImpl implements ItemRepository {
 		namedParameters.addValue("categoryId", item.getCategoryId());
 		namedParameters.addValue("isdelete", AllGolbalConstants.FALSE);
 		namedParameters.addValue("isAvailable", AllGolbalConstants.TRUE);
+		namedParameters.addValue("packagingCharge", item.getPackagingCharge());
 		try {
 			jdbcTemplate.update(ADD_ITEM, namedParameters);
 			int id = DataAccessUtils.singleResult(jdbcTemplate.query(LAST_ID,(rs, rowNum) -> rs.getInt(1)));
@@ -257,6 +260,7 @@ public class ItemRepositoryImpl implements ItemRepository {
 		namedParameters.addValue("categoryId", item.getCategoryId());
 		namedParameters.addValue("imageName", item.getImageName());
 		namedParameters.addValue("isAvailable", item.getIsAvailable());
+		namedParameters.addValue("packagingCharge", item.getPackagingCharge());
 		try {
 			jdbcTemplate.update(UPDATE_ITEM, namedParameters);
 			return getItemById(item.getItemId());

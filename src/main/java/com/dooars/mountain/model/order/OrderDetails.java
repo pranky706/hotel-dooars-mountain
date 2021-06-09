@@ -11,12 +11,21 @@ public class OrderDetails {
 
     private double subtotal;
     private double subtotalAfterOffer;
+    private double totalPackingCharge;
     private double total;
     private double tax;
     private double offer;
     private double deliveryCharges;
     private List<OrderItem> items;
 
+
+    public double getTotalPackingCharge() {
+        return totalPackingCharge;
+    }
+
+    public void setTotalPackingCharge(double totalPackingCharge) {
+        this.totalPackingCharge = totalPackingCharge;
+    }
 
     public double getSubtotal() {
         return subtotal;
@@ -84,6 +93,7 @@ public class OrderDetails {
                 .add("offer", offer)
                 .add("deliveryCharges", deliveryCharges)
                 .add("items", items)
+                .add("totalPackingCharge", totalPackingCharge)
                 .toString();
     }
 }
