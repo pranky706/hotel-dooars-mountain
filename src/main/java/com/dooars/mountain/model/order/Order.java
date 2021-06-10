@@ -25,7 +25,15 @@ public class Order implements Serializable {
     private String completeAddress;
     private long lastUpdatedAt;
     private DeliveryBoy deliveryBoy;
+    private String specialInstruction;
 
+    public String getSpecialInstruction() {
+        return specialInstruction;
+    }
+
+    public void setSpecialInstruction(String specialInstruction) {
+        this.specialInstruction = specialInstruction;
+    }
 
     public String getCustName() {
         return custName;
@@ -138,6 +146,7 @@ public class Order implements Serializable {
                 .add("completeAddress", completeAddress)
                 .add("lastUpdatedAt", lastUpdatedAt)
                 .add("deliveryBoy", deliveryBoy)
+                .add("specialInstruction", specialInstruction)
                 .toString();
     }
 }

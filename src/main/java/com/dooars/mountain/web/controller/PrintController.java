@@ -58,4 +58,30 @@ public class PrintController {
             return helper.constructErrorResponse(e);
         }
     }
+
+    @PostMapping("/api/admin/print-service/deleteBill")
+    public <T> ResponseEntity<T> deleteBill(@RequestParam("fileName") String fileName) {
+        LOGGER.trace("Entering into deleteBill method in PrintController with {}", fileName);
+        try {
+            if ( null == fileName || "".equals(fileName) || !"_bill".contains(fileName))
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            printService.deleteBill(fileName);
+            return new ResponseEntity<T>(HttpStatus.OK);
+        } catch (Exception e) {
+            return helper.constructErrorResponse(e);
+        }
+    }
+
+    @PostMapping("/api/admin/print-service/deleteKot")
+    public <T> ResponseEntity<T> deleteKot(@RequestParam("fileName") String fileName) {
+        LOGGER.trace("Entering into deleteKot method in PrintController with {}", fileName);
+        try {
+            if ( null == fileName || "".equals(fileName) || !"_kot".contains(fileName))
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            printService.deleteKot(fileName);
+            return new ResponseEntity<T>(HttpStatus.OK);
+        } catch (Exception e) {
+            return helper.constructErrorResponse(e);
+        }
+    }
 }

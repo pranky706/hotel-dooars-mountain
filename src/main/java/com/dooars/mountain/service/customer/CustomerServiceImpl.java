@@ -492,6 +492,7 @@ public class CustomerServiceImpl implements CustomerService{
 					DailySell dailySell = new DailySell();
 					dailySell.setTotal(order.getOrderDetails().getTotal());
 					dailySell.setOrderId(order.getOrderId());
+					dailySell.setPaymentMode(order.getPaymentMode());
 					dailySells.add(dailySell);
 					total += dailySell.getTotal();
 				}

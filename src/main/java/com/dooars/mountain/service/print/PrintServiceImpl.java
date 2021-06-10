@@ -43,12 +43,13 @@ public class PrintServiceImpl implements PrintService{
     public String createKOT(long orderId) throws BaseException {
         LOGGER.trace("Entering into createKOT method in PrintServiceImpl class with {}", orderId);
         Order order = customerRepository.getOrderById(orderId);
-        Document document = new Document(PageSize.A4,20,20,15,10);
+        Rectangle pageSize = new Rectangle(227, 842);
+        Document document = new Document(pageSize,5,0,10,10);
         String fileName = "";
         try {
 
             PdfPTable table = new PdfPTable(2);
-            table.setWidthPercentage(45);
+            table.setWidthPercentage(85);
             table.setWidths(new int[]{3, 1});
 
             Font headFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD);
@@ -120,12 +121,13 @@ public class PrintServiceImpl implements PrintService{
     public String createBill(long orderId) throws BaseException {
         LOGGER.trace("Entering into createBill method in PrintServiceImpl class with {}", orderId);
         Order order = customerRepository.getOrderById(orderId);
-        Document document = new Document(PageSize.A4,20,20,15,10);
+        Rectangle pageSize = new Rectangle(227, 842);
+        Document document = new Document(pageSize,5,0,10,10);
         String fileName = "";
         try {
 
             PdfPTable table = new PdfPTable(3);
-            table.setWidthPercentage(45);
+            table.setWidthPercentage(85);
             table.setWidths(new int[]{3, 1, 2});
 
             Font headFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD);
@@ -282,6 +284,18 @@ public class PrintServiceImpl implements PrintService{
         return fileName;
     }
 
+    @Override
+    public void deleteBill(String fileName) throws BaseException {
+        LOGGER.trace("Entering into deleteBill method in PrintServiceImpl class with {}", fileName);
+        awss3Service.deleteFile(fileName);
+    }
+
+    @Override
+    public void deleteKot(String fileName) throws BaseException {
+        LOGGER.trace("Entering into deleteKot method in PrintServiceImpl class with {}", fileName);
+        awss3Service.deleteFile(fileName);
+    }
+
     private void setHeader1(Document document) throws DocumentException {
         Paragraph paragraph = new Paragraph();
         paragraph.setAlignment(Element.ALIGN_CENTER);
@@ -293,7 +307,7 @@ public class PrintServiceImpl implements PrintService{
         paragraph1.setAlignment(Element.ALIGN_CENTER);
         Font normalFont = FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 9);
         paragraph1.setFont(normalFont);
-        paragraph1.add("(An Unit of Dooars Mountain Residence and Co)");
+        paragraph1.add("(An Unit of Dooars Mountain Residence Co)");
         document.add(paragraph1);
         Paragraph paragraph2 = new Paragraph();
         paragraph2.setAlignment(Element.ALIGN_CENTER);
@@ -321,9 +335,9 @@ public class PrintServiceImpl implements PrintService{
         Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD);
         Font normalFont = FontFactory.getFont(FontFactory.HELVETICA);
         paragraph.setAlignment(Element.ALIGN_CENTER);
-        paragraph.add("----------------------------------------------------------"+ "\n");
+        paragraph.add("---------------------------------------------"+ "\n");
         paragraph.add("HOME DELIVERY"+ "\n");
-        paragraph.add("----------------------------------------------------------"+ "\n");
+        paragraph.add("---------------------------------------------"+ "\n");
         paragraph.setFont(boldFont);
         paragraph.add("Order ID  :  ");
         paragraph.setFont(normalFont);
@@ -338,7 +352,7 @@ public class PrintServiceImpl implements PrintService{
         paragraph.add("Time  :  ");
         paragraph.setFont(normalFont);
         paragraph.add(lt.getDayOfMonth() + "-" + lt.getMonth() + "-" + lt.getYear() + "  " + lt.getHour() + ":" + lt.getMinute() + ":" + lt.getSecond());
-        paragraph.add("\n----------------------------------------------------------"+ "\n");
+        paragraph.add("\n---------------------------------------------"+ "\n");
         paragraph.add("\n\n");
         document.add(paragraph);
     }

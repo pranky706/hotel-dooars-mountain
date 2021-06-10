@@ -9,4 +9,6 @@ public interface PrintService {
 
     String createKOT(long orderId) throws BaseException;
     String createBill(long orderId) throws BaseException;
+    void deleteBill(String fileName) throws BaseException;
+    void deleteKot(String fileName) throws BaseException;
 }

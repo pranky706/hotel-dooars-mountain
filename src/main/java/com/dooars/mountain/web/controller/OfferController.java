@@ -74,13 +74,14 @@ public class OfferController {
         LOGGER.trace("Entering into getOfferAdmin method in OfferController with{}");
         try {
             List<CentralOffer> centralOffers = service.getAllOffer();
+            Map<String, Object> map = new HashMap<>();
+            map.put("bucketUrl", AllGolbalConstants.BUCKET_URL);
             if ( null != centralOffers && centralOffers.size() > 0) {
-                Map<String, Object> map = new HashMap<>();
-                map.put("bucketUrl", AllGolbalConstants.BUCKET_URL);
                 map.put("offers", centralOffers);
                 return new ResponseEntity<T>((T) map, HttpStatus.OK);
             } else {
-                return new ResponseEntity<T>((T) Collections.emptyList(), HttpStatus.NOT_FOUND);
+                map.put("offers", Collections.emptyList());
+                return new ResponseEntity<T>((T) map, HttpStatus.OK);
             }
 
         } catch (BaseException e) {

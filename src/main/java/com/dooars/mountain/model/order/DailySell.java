@@ -9,7 +9,15 @@ public class DailySell {
 
     private long orderId;
     private double total;
+    private PaymentMode paymentMode;
 
+    public PaymentMode getPaymentMode() {
+        return paymentMode;
+    }
+
+    public void setPaymentMode(PaymentMode paymentMode) {
+        this.paymentMode = paymentMode;
+    }
 
     public long getOrderId() {
         return orderId;
@@ -32,6 +40,7 @@ public class DailySell {
         return MoreObjects.toStringHelper(this)
                 .add("orderId", orderId)
                 .add("total", total)
+                .add("paymentMode", paymentMode)
                 .toString();
     }
 }

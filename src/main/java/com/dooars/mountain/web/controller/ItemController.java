@@ -3,6 +3,7 @@
  */
 package com.dooars.mountain.web.controller;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -216,13 +217,14 @@ public class ItemController {
 		LOGGER.trace("Entering into getAllCategory method in ItemController with");
 		try {
 			List<Category> categories = service.getAllCategory();
+			Map<String, Object> map = new HashMap<>();
+			map.put("bucketUrl", AllGolbalConstants.BUCKET_URL);
 			if ( null != categories && categories.size() > 0) {
-				Map<String, Object> map = new HashMap<>();
-				map.put("bucketUrl", AllGolbalConstants.BUCKET_URL);
 				map.put("categories", categories);
 				return new ResponseEntity<T>((T) map, HttpStatus.OK);
 			} else {
-				return new ResponseEntity<T>(HttpStatus.NOT_FOUND);
+				map.put("categories", Collections.emptyList());
+				return new ResponseEntity<T>((T) map, HttpStatus.OK);
 			}
 
 		} catch (BaseException e) {
