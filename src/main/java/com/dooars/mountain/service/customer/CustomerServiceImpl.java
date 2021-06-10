@@ -166,7 +166,38 @@ public class CustomerServiceImpl implements CustomerService{
 				return null;
 		}
 		customerRepo.addOrder(objectMapper.writeValueAsString(order), mobileNumber, orderId);
+		sendAdminNotification();
 		return order;
+	}
+
+	private void sendAdminNotification() throws BaseException {
+		try {
+			List<List<CustomerToken>> custTokens = customerRepo.getCustomerTokensAdmin();
+			List<String> tokens = new ArrayList<>();
+			System.out.println(custTokens);
+			for (List<CustomerToken> customerTokens : custTokens) {
+				for (CustomerToken customerToken : customerTokens) {
+					if (Platform.WEB.toString().equals(customerToken.getPlatform().toString())) {
+						tokens.addAll(customerToken.getPushTokens());
+					}
+				}
+			}
+			LOGGER.trace("Token size {}", tokens.size());
+			BatchResponse batchResponse = fireBaseService.sendNotification(makeRequestForPushNotificationForAdmin(tokens));
+			LOGGER.trace("Sending Promotion response {}", batchResponse.getResponses().size());
+		} catch (BaseException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new BaseException(e.getMessage(), AllGolbalConstants.SERVICE_LAYER, null);
+		}
+	}
+
+	private MulticastMessage makeRequestForPushNotificationForAdmin(List<String> tokens) {
+		String title = "Attention!! You have a new order request.";
+		String body = "You have one pending order request, please take action.";
+		Map<String, String> dataMap = new HashMap<>();
+		dataMap.put("type", "NEW_ORDER");
+		return fireBaseService.createMsg(tokens, title, body, dataMap);
 	}
 
 	@Override
@@ -305,9 +336,12 @@ public class CustomerServiceImpl implements CustomerService{
 		else if (status.equals(CurrentStatus.IN_KITCHEN.toString()))
 			body = "Your food is in kitchen now. We are preparing it.";
 		else if (status.equals(CurrentStatus.OUT_FOR_DELIVERY.toString()))
-			body = "Your delicious food is on the way. Please find the contact details of the delivery person in the app.";
+			body = "Your delicious food is on the way. Our delivery person " + order.getDeliveryBoy().getName() +
+					" (+91" + order.getDeliveryBoy().getMobile() + ") will reach with your food shortly.";
 		else if (status.equals(CurrentStatus.DELIVERED.toString()))
 			body =  "We are very happy to serve you. We are waiting to meet you again very soon.";
+		else if (status.equals(CurrentStatus.READY_FOR_DELIVERY.toString()))
+			body =  "Your food is prepared. Our delivery person will leave with your food shortly.";
 		else
 			body = "Your current order status is " + status + ".";
 		Map<String, String> dataMap = new HashMap<>();

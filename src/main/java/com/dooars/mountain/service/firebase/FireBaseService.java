@@ -25,7 +25,7 @@ public class FireBaseService {
     @PostConstruct
     private void init() throws IOException {
         InputStream serviceAccount = this.getClass().getClassLoader()
-                .getResourceAsStream("./hotel-dooars-mountain-firebase-adminsdk-ae7i7-1f0e6f57d1.json");
+                .getResourceAsStream("hotel-dooars-mountain-firebase-adminsdk-ae7i7-1f0e6f57d1.json");
 
         FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))

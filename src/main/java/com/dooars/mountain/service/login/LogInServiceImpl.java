@@ -1,6 +1,5 @@
-package com.dooars.mountain.service.sms;
+package com.dooars.mountain.service.login;
 
-import com.dooars.mountain.constants.AllGolbalConstants;
 import com.dooars.mountain.constants.LoginConstants;
 import com.dooars.mountain.model.common.BaseException;
 import com.dooars.mountain.model.customer.Customer;
@@ -11,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 /**
  * @author Prantik Guha on 01-06-2021
@@ -36,15 +37,17 @@ public class LogInServiceImpl implements LoginService {
             return null;
         if ( null != customer && "N".equals(customer.getIsAdmin()))
             return null;
-        int dd = LocalDate.now().getDayOfMonth();
+        ZoneId zid = ZoneId.of("Asia/Kolkata");
+        ZonedDateTime lt = ZonedDateTime.now(zid);
+        int dd = lt.getDayOfMonth();
         String ddVal = String.valueOf(dd);
         if ( dd < 10)
             ddVal = "0" + ddVal;
-        int mm = LocalDate.now().getMonthValue();
+        int mm = lt.getMonthValue();
         String mmVal = String.valueOf(mm);
         if ( mm < 10)
             mmVal = "0" + mmVal;
-        int yyyy = LocalDate.now().getYear();
+        int yyyy = lt.getYear();
         String pass = LoginConstants.PASS + ddVal + "_" + mmVal + "_" + yyyy;
         System.out.println(pass);
         if (pass.equals(password))

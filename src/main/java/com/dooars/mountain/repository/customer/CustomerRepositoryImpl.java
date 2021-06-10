@@ -53,6 +53,8 @@ public class CustomerRepositoryImpl implements CustomerRepository{
 
 	private final String GET_CUSTOMER_NOT_ADMIN = "select * from customer where isAdmin = :isAdmin and isdelete = :isdelete";
 
+	private final String GET_CUSTOMER_ADMIN = "select * from customer where isAdmin = :isAdmin and isdelete = :isdelete";
+
 	private final String GET_LOCATION = "select location as location from location where mobileNumber = :mobileNumber and isdelete = :isdelete";
 	
 	private final String DELETE_CUSTOMER = "UPDATE customer set isdelete = :isdelete where mobileNumber = :mobileNumber";
@@ -200,11 +202,21 @@ public class CustomerRepositoryImpl implements CustomerRepository{
 
 	@Override
 	public List<List<CustomerToken>> getCustomerTokensNotAdmin() throws BaseException {
-		LOGGER.trace("Entering into getCustomer method in CustomerRepositoryImpl with");
+		LOGGER.trace("Entering into getCustomerTokensNotAdmin method in CustomerRepositoryImpl with");
 		MapSqlParameterSource namedParameters = new MapSqlParameterSource();
 		namedParameters.addValue("isAdmin", AllGolbalConstants.NO);
 		namedParameters.addValue("isdelete", AllGolbalConstants.FALSE);
 		return Try.ofSupplier(() -> jdbcTemplate.query(GET_CUSTOMER_NOT_ADMIN, namedParameters, tokenMapper))
+				.getOrElseThrow(throwable -> new BaseException(throwable.getMessage(), AllGolbalConstants.REPO_LAYER, null));
+	}
+
+	@Override
+	public List<List<CustomerToken>> getCustomerTokensAdmin() throws BaseException {
+		LOGGER.trace("Entering into getCustomerTokensAdmin method in CustomerRepositoryImpl with");
+		MapSqlParameterSource namedParameters = new MapSqlParameterSource();
+		namedParameters.addValue("isAdmin", AllGolbalConstants.YES);
+		namedParameters.addValue("isdelete", AllGolbalConstants.FALSE);
+		return Try.ofSupplier(() -> jdbcTemplate.query(GET_CUSTOMER_ADMIN, namedParameters, tokenMapper))
 				.getOrElseThrow(throwable -> new BaseException(throwable.getMessage(), AllGolbalConstants.REPO_LAYER, null));
 	}
 

@@ -5,7 +5,7 @@ import com.dooars.mountain.constants.AllEndPoints;
 import com.dooars.mountain.constants.AllGolbalConstants;
 import com.dooars.mountain.model.common.BaseException;
 import com.dooars.mountain.model.customer.Customer;
-import com.dooars.mountain.service.sms.LoginService;
+import com.dooars.mountain.service.login.LoginService;
 import com.dooars.mountain.web.commands.login.LoginCommand;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

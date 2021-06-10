@@ -45,4 +45,5 @@ public interface CustomerRepository {
 	List<CustomerToken> getCustomerTokens(long mobileNumber) throws BaseException;
 	List<Order> getDailyOrders(long start, long end) throws BaseException;
 	List<List<CustomerToken>> getCustomerTokensNotAdmin() throws BaseException;
+	List<List<CustomerToken>> getCustomerTokensAdmin() throws BaseException;
 }
