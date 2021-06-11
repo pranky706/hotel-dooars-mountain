@@ -106,6 +106,7 @@ public class PrintServiceImpl implements PrintService{
             setHeader(document);
             setDescription(document, order);
             document.add(table);
+            addSpecialInstruction(document, order);
             document.close();
 
             awss3Service.uploadFile(file);
@@ -115,6 +116,21 @@ public class PrintServiceImpl implements PrintService{
             throw new BaseException(ex.getMessage(), AllGolbalConstants.SERVICE_LAYER, null);
         }
         return fileName;
+    }
+
+    private void addSpecialInstruction(Document document, Order order) throws DocumentException {
+        Paragraph paragraph = new Paragraph();
+        paragraph.setAlignment(Element.ALIGN_LEFT);
+        Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD);
+        paragraph.setFont(boldFont);
+        paragraph.add("\n**Special Instructions : ");
+        Font normalFont = FontFactory.getFont(FontFactory.HELVETICA);
+        paragraph.setFont(normalFont);
+        if (null != order || !"".equals(order.getSpecialInstruction()) || null != order.getSpecialInstruction() )
+            paragraph.add(order.getSpecialInstruction() + "\n");
+        else
+            paragraph.add(" None \n");
+        document.add(paragraph);
     }
 
     @Override

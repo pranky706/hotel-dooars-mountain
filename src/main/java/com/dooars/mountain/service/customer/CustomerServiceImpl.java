@@ -641,7 +641,12 @@ public class CustomerServiceImpl implements CustomerService{
 
 	public Comparator<Map<String, Object>> mapComparator = new Comparator<Map<String, Object>>() {
 		public int compare(Map<String, Object> m1, Map<String, Object> m2) {
-			return String.valueOf(m2.get("quantity")).compareTo(String.valueOf(m1.get("quantity")));
+			if (Integer.parseInt(String.valueOf(m1.get("quantity"))) > Integer.parseInt(String.valueOf(m2.get("quantity"))))
+				return -1;
+			else if (Integer.parseInt(String.valueOf(m1.get("quantity"))) == Integer.parseInt(String.valueOf(m2.get("quantity"))))
+				return 0;
+			else
+				return 1;
 		}
 	};
 

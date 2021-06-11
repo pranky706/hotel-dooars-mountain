@@ -63,7 +63,7 @@ public class PrintController {
     public <T> ResponseEntity<T> deleteBill(@RequestParam("fileName") String fileName) {
         LOGGER.trace("Entering into deleteBill method in PrintController with {}", fileName);
         try {
-            if ( null == fileName || "".equals(fileName) || !"_bill".contains(fileName))
+            if ( null == fileName || "".equals(fileName))
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             printService.deleteBill(fileName);
             return new ResponseEntity<T>(HttpStatus.OK);
@@ -76,7 +76,7 @@ public class PrintController {
     public <T> ResponseEntity<T> deleteKot(@RequestParam("fileName") String fileName) {
         LOGGER.trace("Entering into deleteKot method in PrintController with {}", fileName);
         try {
-            if ( null == fileName || "".equals(fileName) || !"_kot".contains(fileName))
+            if ( null == fileName || "".equals(fileName))
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             printService.deleteKot(fileName);
             return new ResponseEntity<T>(HttpStatus.OK);
