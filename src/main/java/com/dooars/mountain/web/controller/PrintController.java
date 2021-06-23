@@ -65,7 +65,7 @@ public class PrintController {
         try {
             if ( null == fileName || "".equals(fileName))
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            printService.deleteBill(fileName);
+            printService.deleteBill(fileName + ".pdf");
             return new ResponseEntity<T>(HttpStatus.OK);
         } catch (Exception e) {
             return helper.constructErrorResponse(e);
@@ -78,7 +78,7 @@ public class PrintController {
         try {
             if ( null == fileName || "".equals(fileName))
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            printService.deleteKot(fileName);
+            printService.deleteKot(fileName + ".pdf");
             return new ResponseEntity<T>(HttpStatus.OK);
         } catch (Exception e) {
             return helper.constructErrorResponse(e);

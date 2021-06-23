@@ -31,5 +31,5 @@ public class AllGolbalConstants {
 	public static final double HOTEL_LAT = 26.4881718;
 	public static final double HOTEL_LON = 89.5267149;
 	public static final String BUCKET_URL = "https://menu-hotel-dooars-mountain.s3.us-east-2.amazonaws.com/";
-	public static final String RAZORPAY_SECRET = "Ug9e74TgbJS6Em7MXNMRQEi6";
+	public static final String RAZORPAY_SECRET = "iCONYVfwomJFyhCILvRdn55d";
 }
